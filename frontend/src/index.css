@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Background: Off-white (slight green tint) */
+    --background: 144 15% 95%;
+    /* Main text: Dark green/black */
+    --foreground: 144 60% 10%;
+
+    /* Components (Cards, Popovers): Dark Green */
+    --card: 144 100% 10%;
+    /* Component Text: White/Off-white */
+    --card-foreground: 144 20% 95%;
+
+    --popover: 144 100% 10%;
+    --popover-foreground: 144 20% 95%;
+
+    /* Primary: Neon Green */
+    --primary: 144 100% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Dark Green */
+    --secondary: 144 100% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 144 20% 85%;
+    --muted-foreground: 144 40% 40%;
+
+    --accent: 144 100% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 144 20% 80%;
+    --input: 144 20% 80%;
+    --ring: 144 100% 35%;
+
+    --radius: 1.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 6%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary: Neon Green */
+    --primary: 144 100% 50%;
+    --primary-foreground: 0 0% 0%;
+
+    /* Secondary: Darker Green / Accent */
+    --secondary: 144 100% 30%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+
+    /* Accent: Maybe a slight cyan or pink, but mostly green theme */
+    --accent: 144 100% 40%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 144 100% 50%;
+  }
+}
+
+@layer utilities {
+  .bg-grid-pattern {
+    background-size: 60px 60px;
+    background-image: 
+      linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  }
+  .dark .bg-grid-pattern {
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  }
+  
+  /* High Refresh Rate Optimizations */
+  .animate-fade-in,
+  .animate-fade-in-up,
+  .animate-scale-in,
+  .transition-all,
+  .transition-colors,
+  .transition-transform,
+  .transition-opacity {
+    will-change: transform, opacity;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-poppins;
+  }
+}

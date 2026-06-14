@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | LEARNOPTO</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@700;800;900&amp;family=Inter:wght@400&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#003911",
+                    "on-primary-fixed": "#002107",
+                    "secondary": "#c8c6c5",
+                    "on-tertiary-container": "#795d23",
+                    "on-secondary-fixed-variant": "#474746",
+                    "error-container": "#93000a",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "surface-container-highest": "#353534",
+                    "surface-variant": "#353534",
+                    "on-background": "#e5e2e1",
+                    "outline-variant": "#3b4b3a",
+                    "tertiary": "#fff9f4",
+                    "surface": "#131313",
+                    "surface-container-low": "#1c1b1b",
+                    "secondary-fixed": "#e5e2e1",
+                    "on-tertiary": "#412d00",
+                    "on-tertiary-fixed-variant": "#5c4209",
+                    "primary-container": "#00ff66",
+                    "secondary-container": "#474746",
+                    "outline": "#849581",
+                    "inverse-on-surface": "#313030",
+                    "surface-bright": "#3a3939",
+                    "tertiary-fixed-dim": "#e7c17d",
+                    "background": "#131313",
+                    "primary": "#edffe8",
+                    "surface-container": "#201f1f",
+                    "on-tertiary-fixed": "#271900",
+                    "on-primary-container": "#007128",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-container": "#ffd892",
+                    "primary-fixed-dim": "#00e55b",
+                    "on-secondary-container": "#b7b5b4",
+                    "on-primary-fixed-variant": "#00531b",
+                    "inverse-surface": "#e5e2e1",
+                    "error": "#ffb4ab",
+                    "surface-tint": "#00e55b",
+                    "primary-fixed": "#6bff83",
+                    "on-error": "#690005",
+                    "surface-dim": "#131313",
+                    "secondary-fixed-dim": "#c8c6c5",
+                    "on-surface-variant": "#b9ccb5",
+                    "on-secondary": "#313030",
+                    "surface-container-high": "#2a2a2a",
+                    "inverse-primary": "#006e27",
+                    "surface-container-lowest": "#0e0e0e",
+                    "on-surface": "#e5e2e1",
+                    "tertiary-fixed": "#ffdea5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0px",
+                    "lg": "0px",
+                    "xl": "0px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "64px",
+                    "gutter": "24px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Hanken Grotesk"],
+                    "body-lg": ["Inter"],
+                    "display-lg": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Hanken Grotesk"],
+                    "label-mono": ["JetBrains Mono"],
+                    "headline-md": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                    "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "display-lg": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                    "label-mono": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #131313;
+            background-image: 
+                linear-gradient(to right, #1a1a1a 1px, transparent 1px),
+                linear-gradient(to bottom, #1a1a1a 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .neo-shadow {
+            box-shadow: 8px 8px 0px 0px #00ff66;
+        }
+        .btn-hover-effect:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0px 0px #00e55b;
+        }
+        .btn-hover-effect:active {
+            transform: translate(2px, 2px);
+            box-shadow: 4px 4px 0px 0px #007128;
+        }
+        .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md text-on-surface overflow-x-hidden">
+<!-- TopNavBar (Simulated for Identity only - Shell suppressed as per task instructions for focused transactional page) -->
+<header class="w-full fixed top-0 z-50 bg-background border-b border-outline-variant">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-headline-md text-headline-md font-black tracking-tighter text-on-surface uppercase">
+                LEARNOPTO
+            </div>
+<div class="hidden md:flex items-center gap-6">
+<span class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest">System Status: <span class="text-primary-fixed-dim">Operational</span></span>
+</div>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center px-margin-mobile md:px-0 pt-20 pb-12">
+<div class="w-full max-w-md">
+<!-- Center Card Container -->
+<div class="relative bg-surface border-2 border-on-surface p-8 md:p-12 neo-shadow">
+<!-- Branding & Tagline -->
+<div class="mb-10">
+<div class="inline-block bg-primary-container text-on-primary px-3 py-1 mb-6 font-label-mono text-label-mono uppercase tracking-widest">
+                        Access Protocol
+                    </div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">
+                        System Entrance.
+                    </h1>
+<p class="font-label-mono text-label-mono text-on-surface-variant uppercase leading-relaxed max-w-[280px]">
+                        Initialize session for optical intelligence platform v4.0.2 <span class="inline-block w-2 h-4 bg-primary-fixed-dim align-middle ml-1 cursor-blink"></span>
+</p>
+</div>
+<!-- Primary Action Section -->
+<div class="space-y-6">
+<button class="w-full flex items-center justify-center gap-4 bg-primary-container text-on-primary font-headline-md text-headline-md py-4 transition-all duration-100 btn-hover-effect">
+<!-- Custom SVG for Google Logo with Neo-Brutalist alignment -->
+<svg class="w-6 h-6" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="currentColor"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="currentColor"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="currentColor"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="currentColor"></path>
+</svg>
+                        Log in with Google
+                    </button>
+<div class="relative py-4">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-outline-variant"></div>
+</div>
+<div class="relative flex justify-center text-label-mono uppercase tracking-[0.2em]">
+<span class="bg-surface px-4 text-on-surface-variant">Core Credentials</span>
+</div>
+</div>
+<!-- Secondary/Alternative Flow (Ghost Style) -->
+<div class="space-y-4">
+<div class="group border border-outline-variant hover:border-primary-fixed-dim transition-colors">
+<input class="w-full bg-transparent border-none focus:ring-0 font-label-mono text-label-mono text-on-surface px-4 py-4 placeholder:text-surface-container-highest uppercase tracking-widest" placeholder="USER_IDENTIFIER@LEARNOPTO.IO" type="email"/>
+</div>
+<div class="flex justify-between items-center pt-2">
+<a class="font-label-mono text-label-mono text-on-surface-variant hover:text-primary-fixed-dim underline decoration-2 underline-offset-4 uppercase transition-colors" href="#">Create ID</a>
+<a class="font-label-mono text-label-mono text-on-surface-variant hover:text-primary-fixed-dim underline decoration-2 underline-offset-4 uppercase transition-colors" href="#">Forgot Key</a>
+</div>
+</div>
+</div>
+<!-- Footer Technical Metadata -->
+<div class="mt-12 pt-8 border-t border-outline-variant">
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span class="font-label-mono text-[10px] uppercase tracking-widest">AES-256 Encrypted Gateway</span>
+</div>
+</div>
+</div>
+<!-- Background Decorative Element -->
+<div class="mt-8 flex justify-between px-2">
+<div class="font-label-mono text-[10px] text-surface-container-highest uppercase tracking-widest">Auth_Token: Null</div>
+<div class="font-label-mono text-[10px] text-surface-container-highest uppercase tracking-widest">Session_ID: 0x882A_FF01</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full bg-surface-container-lowest border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-margin-desktop py-8 max-w-container-max mx-auto">
+<div class="mb-6 md:mb-0">
+<span class="font-label-mono text-label-mono text-on-surface-variant uppercase tracking-widest">© 2024 LEARNOPTO CORE. ALL RIGHTS RESERVED.</span>
+</div>
+<div class="flex gap-8">
+<a class="font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-all" href="#">Privacy Protocol</a>
+<a class="font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-all" href="#">Terms of Service</a>
+<a class="font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-all" href="#">Status</a>
+</div>
+</div>
+</footer>
+<!-- Decorative Corner Element -->
+<div class="fixed bottom-0 right-0 p-4 pointer-events-none opacity-20">
+<div class="w-32 h-32 border-r-2 border-b-2 border-primary-fixed-dim"></div>
+</div>
+<div class="fixed top-0 left-0 p-4 pointer-events-none opacity-20">
+<div class="w-32 h-32 border-l-2 border-t-2 border-primary-fixed-dim"></div>
+</div>
+<script>
+        // Micro-interaction for the login button
+        const loginBtn = document.querySelector('button');
+        loginBtn.addEventListener('mouseenter', () => {
+            console.log('Gateway Ready');
+        });
+        
+        // Console visual flair
+        console.log("%cLEARNOPTO AUTHENTICATION GATEWAY", "color: #00ff66; font-weight: bold; font-size: 14px;");
+        console.log("%cConnection Secure", "color: #849581; font-style: italic;");
+    </script>
+</body></html>

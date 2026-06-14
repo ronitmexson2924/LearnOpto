@@ -1,0 +1,184 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id    String  @id @default(uuid())
+  email String  @unique
+  name  String?
+  image String?
+
+  passwordHash String?
+
+  provider   String
+  providerId String
+
+  role String @default("user")
+
+  searchCount Int @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
+  searches             SearchHistory[]
+  savedResources       SavedResource[]
+  resourceInteractions ResourceInteraction[]
+  passkeys             PasskeyCredential[]
+
+  preferences UserPreference?
+  analytics   UserAnalytics?
+
+  @@unique([provider, providerId])
+  @@index([email])
+}
+
+model SearchHistory {
+  id String @id @default(uuid())
+
+  query    String
+  category String?
+
+  learningLevel String?
+
+  status String @default("completed")
+
+  aiSummary String?
+
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  resources SearchResource[]
+
+  @@index([userId])
+  @@index([query])
+  @@index([createdAt])
+}
+
+model SearchResource {
+  id String @id @default(uuid())
+
+  title       String
+  description String?
+
+  url String
+
+  source String
+  type   String
+
+  thumbnail String?
+  author    String?
+
+  duration String?
+  language String?
+
+  rating Float?
+  rank   Int?
+
+  createdAt DateTime @default(now())
+
+  searchId String
+  search   SearchHistory @relation(fields: [searchId], references: [id], onDelete: Cascade)
+
+  @@index([searchId])
+  @@index([source])
+  @@index([type])
+}
+
+model SavedResource {
+  id String @id @default(uuid())
+
+  title       String
+  description String?
+
+  url String
+
+  source String
+  type   String
+
+  thumbnail String?
+
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, url])
+  @@index([userId])
+}
+
+model UserPreference {
+  id String @id @default(uuid())
+
+  preferredLevel String?
+
+  preferredSources Json?
+
+  preferredDuration String?
+
+  favoriteTopics Json?
+
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserAnalytics {
+  id String @id @default(uuid())
+
+  totalSearches Int @default(0)
+
+  totalResourcesViewed Int @default(0)
+
+  totalResourcesSaved Int @default(0)
+
+  favoriteTopic String?
+
+  lastActivity DateTime?
+
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ResourceInteraction {
+  id String @id @default(uuid())
+
+  clicked Boolean @default(false)
+
+  saved Boolean @default(false)
+
+  resourceUrl String
+
+  createdAt DateTime @default(now())
+
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resourceUrl])
+}
+
+model PasskeyCredential {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String   @unique
+  publicKey    Bytes
+  counter      BigInt
+  transports   String?
+  deviceType   String
+  backedUp     Boolean
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([userId])
+}

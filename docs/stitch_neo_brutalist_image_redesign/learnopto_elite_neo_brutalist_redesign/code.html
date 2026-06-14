@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LEARNOPTO - Elite AI Learning Platform</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@700;800;900&amp;family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Design System Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#3a3939",
+                        "surface-container-highest": "#353534",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-tertiary": "#412d00",
+                        "on-tertiary-fixed-variant": "#5c4209",
+                        "secondary": "#c8c6c5",
+                        "on-primary-fixed-variant": "#00531b",
+                        "on-error": "#690005",
+                        "on-secondary": "#313030",
+                        "on-secondary-container": "#b7b5b4",
+                        "on-primary": "#003911",
+                        "outline": "#849581",
+                        "on-primary-container": "#007128",
+                        "secondary-fixed": "#e5e2e1",
+                        "on-tertiary-container": "#795d23",
+                        "surface-container-low": "#1c1b1b",
+                        "primary-container": "#00ff66",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "surface-container-high": "#2a2a2a",
+                        "primary": "#edffe8",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#00e55b",
+                        "tertiary-fixed-dim": "#e7c17d",
+                        "secondary-fixed-dim": "#c8c6c5",
+                        "inverse-primary": "#006e27",
+                        "surface": "#131313",
+                        "outline-variant": "#3b4b3a",
+                        "surface-variant": "#353534",
+                        "inverse-on-surface": "#313030",
+                        "on-surface-variant": "#b9ccb5",
+                        "tertiary": "#fff9f4",
+                        "primary-fixed": "#6bff83",
+                        "on-background": "#e5e2e1",
+                        "on-tertiary-fixed": "#271900",
+                        "tertiary-container": "#ffd892",
+                        "primary-fixed-dim": "#00e55b",
+                        "background": "#131313",
+                        "surface-container": "#201f1f",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#e5e2e1",
+                        "tertiary-fixed": "#ffdea5",
+                        "secondary-container": "#474746",
+                        "surface-dim": "#131313",
+                        "on-primary-fixed": "#002107",
+                        "inverse-surface": "#e5e2e1",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#474746"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-desktop": "64px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "display-lg": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                        "label-mono": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .neo-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(59, 75, 58, 0.2) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(59, 75, 58, 0.2) 1px, transparent 1px);
+        }
+        .neo-card-shadow:hover {
+            box-shadow: 8px 8px 0px 0px #00ff66;
+            transform: translate(-4px, -4px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary">
+<!-- TopNavBar -->
+<nav class="bg-background dark:bg-background border-b border-outline-variant fixed top-0 left-0 right-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-8">
+<span class="font-headline-md text-headline-md font-black tracking-tighter text-on-surface dark:text-on-surface uppercase">LEARNOPTO</span>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-primary-fixed-dim dark:text-primary-fixed-dim font-bold font-label-mono text-label-mono uppercase hover:text-primary-fixed-dim transition-colors duration-100 border-b-2 border-primary-fixed-dim pb-1" href="#">Discover</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-mono text-label-mono uppercase hover:text-primary-fixed-dim transition-colors duration-100" href="#">Platform</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-mono text-label-mono uppercase hover:text-primary-fixed-dim transition-colors duration-100" href="#">Research</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-mono text-label-mono uppercase hover:text-primary-fixed-dim transition-colors duration-100" href="#">API</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary-fixed-dim" data-icon="dark_mode">dark_mode</span>
+<button class="bg-primary-container text-on-primary font-label-mono text-label-mono uppercase py-2 px-6 hover:bg-primary-fixed transition-colors">
+                    Get Started
+                </button>
+</div>
+</div>
+</nav>
+<main class="pt-24 min-h-screen neo-grid">
+<!-- Hero Section -->
+<section class="relative px-margin-desktop py-24 max-w-container-max mx-auto flex flex-col items-center text-center">
+<!-- Decorative Elements -->
+<div class="absolute top-0 left-0 -z-10 w-64 h-64 border border-outline-variant rotate-45 opacity-20"></div>
+<div class="absolute bottom-20 right-0 -z-10 w-96 h-96 border-2 border-primary-fixed-dim opacity-10 rounded-full"></div>
+<div class="mb-6 flex items-center gap-4 text-primary-fixed-dim">
+<span class="material-symbols-outlined text-4xl" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-label-mono text-label-mono uppercase tracking-[0.2em]">Intellectual Command Center</span>
+</div>
+<h1 class="font-display-lg text-display-lg uppercase mb-6 max-w-4xl leading-tight">
+                LEARNOPTO
+            </h1>
+<p class="font-headline-md text-headline-md text-on-surface-variant mb-4 uppercase tracking-tight">
+                AI Agent that is there to resolve all your study needs
+            </p>
+<p class="font-body-lg text-body-lg text-secondary max-w-2xl mb-12">
+                Discover curated learning resources from YouTube, podcasts, documentation, and courses—all ranked by quality and relevance.
+            </p>
+<!-- Search UI -->
+<div class="w-full max-w-3xl bg-surface-container border border-outline p-2 flex flex-col md:flex-row items-center gap-2 group focus-within:border-primary-fixed-dim transition-all">
+<div class="flex items-center gap-3 px-4 w-full">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 w-full font-body-md text-on-surface placeholder:text-surface-variant" placeholder="What do you want to learn today? (e.g., Machine Learning, Real Estate)" type="text"/>
+</div>
+<button class="bg-primary-container text-on-primary font-headline-md text-headline-md px-10 py-4 flex items-center gap-2 hover:bg-primary-fixed transition-colors w-full md:w-auto">
+                    DISCOVER
+                    <span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+</button>
+</div>
+<p class="mt-4 font-label-mono text-label-mono uppercase text-on-surface-variant">
+                Powered by AI • Get instant access to top-rated learning resources
+            </p>
+</section>
+<!-- Why LearnOpto Section -->
+<section class="px-margin-desktop py-32 max-w-container-max mx-auto border-t border-outline-variant">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+<div class="max-w-xl">
+<span class="font-label-mono text-label-mono text-primary-fixed-dim uppercase tracking-widest mb-4 block">Core Infrastructure</span>
+<h2 class="font-headline-lg text-headline-lg uppercase mb-4">Why Choose LearnOpto?</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Your intelligent companion for discovering the best learning resources across the digital landscape.</p>
+</div>
+<div class="flex gap-4">
+<div class="w-12 h-12 border border-outline-variant flex items-center justify-center hover:border-primary-fixed-dim transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</div>
+<div class="w-12 h-12 border border-outline-variant flex items-center justify-center hover:border-primary-fixed-dim transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Bento Grid Cards -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Card 1 -->
+<div class="md:col-span-4 border border-outline-variant bg-surface-container-low p-8 flex flex-col gap-6 neo-card-shadow transition-all group">
+<div class="w-16 h-16 border-2 border-primary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl" data-icon="curated_podcasts">podcasts</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md uppercase mb-3">Curated Sources</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            We filter through the noise to provide only the highest quality content from verified educators and technical experts.
+                        </p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="md:col-span-8 border border-outline-variant bg-surface-container-low p-8 flex flex-col md:flex-row gap-8 neo-card-shadow transition-all group overflow-hidden relative">
+<div class="md:w-1/2 flex flex-col justify-between">
+<div>
+<div class="w-16 h-16 border-2 border-primary-fixed-dim flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl" data-icon="psychology">psychology</span>
+</div>
+<h3 class="font-headline-md text-headline-md uppercase mb-3">AI-Powered Insights</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                Our proprietary AI analyze curriculum depth, creator reputation, and community feedback to rank resources with surgical precision.
+                            </p>
+</div>
+<div class="mt-8">
+<button class="font-label-mono text-label-mono uppercase text-primary-fixed-dim flex items-center gap-2 group-hover:gap-4 transition-all">
+                                Explore Methodology <span class="material-symbols-outlined">trending_flat</span>
+</button>
+</div>
+</div>
+<div class="md:w-1/2 relative min-h-[200px]">
+<img class="absolute inset-0 w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-80 transition-all duration-500" data-alt="A highly detailed close-up of a futuristic silicon processor glowing with neon green data streams against a dark, minimalist industrial background. The lighting is harsh and high-contrast, emphasizing the sharp edges and complex circuitry. The aesthetic is elite and technical, consistent with a premium AI command center identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbELKVswPy-YRkL6zUSJpJ6KeKTEGAQ8J7lvyhgMvaHyAYMmUytrzUARhuoKJHFum1lt5R4mmr09oWI-Yh3e_zWm6lrxqUr0wgf0iCPCeKFxnvLBi5WQm3UyiJSArzq2VwJtzwaCRA9UxMT3atPAcBRaupx14xswtnIfpJqOhk_vkDkqOLrhPoP27UZUmXx1q5I1xwlGId-eaWWdCQq5YJGHEzRecyUUDWF_VUvPC2Powe5n3YR3D_6vzOGbO-SirHr2BJefzTZpYq"/>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="md:col-span-8 border border-outline-variant bg-surface-container-low p-8 flex flex-col md:flex-row-reverse gap-8 neo-card-shadow transition-all group overflow-hidden relative">
+<div class="md:w-1/2 flex flex-col justify-between">
+<div>
+<div class="w-16 h-16 border-2 border-primary-fixed-dim flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl" data-icon="hub">hub</span>
+</div>
+<h3 class="font-headline-md text-headline-md uppercase mb-3">Multi-Source Sync</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                                One interface for YouTube, Podcasts, Substack, and GitHub. Build a holistic learning path across fragmented platforms.
+                            </p>
+</div>
+<div class="mt-8">
+<div class="flex gap-4">
+<span class="bg-surface-container-highest px-3 py-1 font-label-mono text-label-mono uppercase">Video</span>
+<span class="bg-surface-container-highest px-3 py-1 font-label-mono text-label-mono uppercase">Audio</span>
+<span class="bg-surface-container-highest px-3 py-1 font-label-mono text-label-mono uppercase">Code</span>
+</div>
+</div>
+</div>
+<div class="md:w-1/2 relative min-h-[200px]">
+<img class="absolute inset-0 w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-80 transition-all duration-500" data-alt="An abstract visualization of a global data network with intricate, glowing connections forming a complex web. The scene is set in a dark digital void with primary green accents highlighting key nodes. The style is sharp, geometric, and brutally honest, conveying massive information flow and technological authority." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAtpe4ztLRMqAdl_37K8MapUvyVvW0vvZc3M8oPG1g-vMCy-Kvoihggcx9az7d-uc4W04guCEleLHNrsfy8ZW5hEixC7NRFBHAIP79zovmSkKDyfTTx087zcGvRsa8kOib6W7g-6pNmJUiiM-o7XT73SnAmErYSluQc7hj9V2UeAQkQlu9hxCJ5hfaYq1zEyJMRUgWrK8ebnu7nMlo2xaGOD0bfdGZlV-lIRJld7ePiBQYFP_jSbQtArVSwcL4jlOn9qYoeHa4GlIA"/>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="md:col-span-4 border border-outline-variant bg-surface-container-low p-8 flex flex-col gap-6 neo-card-shadow transition-all group">
+<div class="w-16 h-16 border-2 border-primary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl" data-icon="verified">verified</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md uppercase mb-3">Skill Verification</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            Track your progress across sources and validate your learning with AI-generated assessments and peer reviews.
+                        </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Platform Stats -->
+<section class="bg-surface-container-lowest border-y border-outline-variant">
+<div class="max-w-container-max mx-auto px-margin-desktop py-16 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
+<div>
+<div class="font-display-lg text-[48px] uppercase text-primary-fixed-dim mb-2">500K+</div>
+<div class="font-label-mono text-label-mono uppercase text-secondary">Resources Index</div>
+</div>
+<div>
+<div class="font-display-lg text-[48px] uppercase text-on-surface mb-2">98%</div>
+<div class="font-label-mono text-label-mono uppercase text-secondary">Precision Rate</div>
+</div>
+<div>
+<div class="font-display-lg text-[48px] uppercase text-on-surface mb-2">12M</div>
+<div class="font-label-mono text-label-mono uppercase text-secondary">Study Hours</div>
+</div>
+<div>
+<div class="font-display-lg text-[48px] uppercase text-primary-fixed-dim mb-2">24/7</div>
+<div class="font-label-mono text-label-mono uppercase text-secondary">Agent Support</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="px-margin-desktop py-32 max-w-container-max mx-auto text-center">
+<div class="border-2 border-primary-fixed-dim p-16 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed-dim opacity-10 -mr-16 -mt-16 rotate-45"></div>
+<h2 class="font-headline-lg text-headline-lg uppercase mb-8">Ready to master your field?</h2>
+<div class="flex flex-col md:flex-row justify-center gap-6">
+<button class="bg-primary-container text-on-primary font-headline-md text-headline-md px-12 py-5 hover:bg-primary-fixed transition-all active:translate-y-1">
+                        BUILD MY CURRICULUM
+                    </button>
+<button class="border-2 border-on-surface text-on-surface font-headline-md text-headline-md px-12 py-5 hover:bg-on-surface hover:text-background transition-all active:translate-y-1">
+                        SEE PLATFORM DEMO
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center w-full px-margin-desktop py-12 max-w-container-max mx-auto gap-12 md:gap-0">
+<div class="flex flex-col gap-4">
+<span class="font-headline-md text-headline-md font-black text-on-surface dark:text-on-surface uppercase">LEARNOPTO</span>
+<p class="font-label-mono text-label-mono uppercase text-on-surface-variant max-w-xs leading-relaxed">
+                    The elite standard for artificial intelligence in academic resource discovery.
+                </p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16">
+<div class="flex flex-col gap-4">
+<span class="font-label-mono text-label-mono text-on-surface font-bold uppercase mb-2">Protocol</span>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-colors" href="#">Privacy</a>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-colors" href="#">Security</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="font-label-mono text-label-mono text-on-surface font-bold uppercase mb-2">Platform</span>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-colors" href="#">Status</a>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-colors" href="#">API Docs</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="font-label-mono text-label-mono text-on-surface font-bold uppercase mb-2">Network</span>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-colors" href="#">X / Twitter</a>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-colors" href="#">GitHub</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="font-label-mono text-label-mono text-on-surface font-bold uppercase mb-2">Legal</span>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-colors" href="#">Terms</a>
+<a class="font-label-mono text-label-mono uppercase text-on-surface-variant hover:underline decoration-2 underline-offset-4 hover:text-primary-fixed-dim transition-colors" href="#">Liability</a>
+</div>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-desktop py-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-4">
+<span class="font-label-mono text-label-mono uppercase tracking-widest text-on-surface-variant">© 2024 LEARNOPTO CORE. ALL RIGHTS RESERVED.</span>
+<div class="flex gap-4">
+<div class="w-2 h-2 bg-primary-fixed-dim rounded-full animate-pulse"></div>
+<span class="font-label-mono text-label-mono uppercase text-primary-fixed-dim">SYSTEMS OPERATIONAL</span>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interactions
+        document.querySelectorAll('.neo-card-shadow').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const icon = card.querySelector('.material-symbols-outlined');
+                if (icon) {
+                    icon.style.fontVariationSettings = "'FILL' 1";
+                }
+            });
+            card.addEventListener('mouseleave', () => {
+                const icon = card.querySelector('.material-symbols-outlined');
+                if (icon) {
+                    icon.style.fontVariationSettings = "'FILL' 0";
+                }
+            });
+        });
+
+        // Search Bar Focus Effect
+        const searchInput = document.querySelector('input[type="text"]');
+        const searchContainer = searchInput.parentElement.parentElement;
+        
+        searchInput.addEventListener('focus', () => {
+            searchContainer.classList.add('shadow-[8px_8px_0px_0px_#00ff66]');
+            searchContainer.style.transform = 'translate(-4px, -4px)';
+        });
+        
+        searchInput.addEventListener('blur', () => {
+            searchContainer.classList.remove('shadow-[8px_8px_0px_0px_#00ff66]');
+            searchContainer.style.transform = 'translate(0px, 0px)';
+        });
+    </script>
+</body></html>
