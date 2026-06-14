@@ -1,73 +1,106 @@
-# Welcome to your Lovable project
+# LearnOpto
 
-## Project info
+LearnOpto is an AI-powered study assistant designed to resolve all your learning needs. It curates high-quality YouTube videos, podcasts, documentation, and online courses based on your queries to provide a customized learning experience.
 
-**URL**: https://lovable.dev/projects/0cc84948-74ce-4ed9-b233-a1038de47d7a
+## Features
 
-## How can I edit this code?
+- **AI-Powered Search & Curation:** Find the best resources tailored to your learning goals using Google GenAI.
+- **Passkey Authentication:** Secure, passwordless login using WebAuthn.
+- **Resource Management:** Save and organize your favorite learning materials.
+- **Learning Analytics:** Keep track of your search history and resource interactions.
+- **Modern User Interface:** Built with a beautiful, neo-brutalist inspired UI utilizing React, Tailwind CSS, and shadcn/ui.
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+### Frontend
+- **Framework:** React with TypeScript (via Vite)
+- **Styling:** Tailwind CSS, Framer Motion
+- **UI Components:** shadcn/ui, Radix UI
+- **Routing:** React Router
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0cc84948-74ce-4ed9-b233-a1038de47d7a) and start prompting.
+### Backend
+- **Framework:** Node.js, Express
+- **Language:** TypeScript
+- **Database ORM:** Prisma
+- **Authentication:** SimpleWebAuthn (Passkeys), JWT
+- **AI Integration:** Google GenAI SDK
 
-Changes made via Lovable will be committed automatically to this repo.
+### Database
+- **Engine:** PostgreSQL
 
-**Use your preferred IDE**
+## Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Before you begin, ensure you have the following installed on your machine:
+- [Node.js](https://nodejs.org/en/) (v18 or higher recommended)
+- [PostgreSQL](https://www.postgresql.org/)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Local Development Setup
 
-Follow these steps:
+### 1. Clone the repository
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+If you haven't already, clone the repository to your local machine:
+```bash
+git clone <repository-url>
+cd learn-opto
 ```
 
-**Edit a file directly in GitHub**
+### 2. Install Dependencies
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Install the dependencies for both the frontend and the backend.
 
-**Use GitHub Codespaces**
+**Backend:**
+```bash
+cd backend
+npm install
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+**Frontend:**
+```bash
+cd ../frontend
+npm install
+```
 
-## What technologies are used for this project?
+### 3. Environment Variables
 
-This project is built with:
+Create a `.env` file in the `backend/` directory and configure the following variables:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```env
+PORT=3000
+JWT_SECRET=your_jwt_secret
+GEMINI_API_KEY=your_gemini_api_key
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+FRONTEND_URL=http://localhost:8080
+DATABASE_URL="postgresql://username:password@localhost:5432/learn-opto"
+```
 
-## How can I deploy this project?
+### 4. Database Setup
 
-Simply open [Lovable](https://lovable.dev/projects/0cc84948-74ce-4ed9-b233-a1038de47d7a) and click on Share -> Publish.
+Ensure your PostgreSQL server is running. Then, push the database schema using Prisma:
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+cd backend
+npx prisma db push
+```
 
-Yes, you can!
+### 5. Start the Development Servers
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+You will need to run the frontend and backend servers concurrently.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+**Start the Backend:**
+```bash
+cd backend
+npm run dev
+```
+The backend server will typically run on `http://localhost:3000`.
+
+**Start the Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+The frontend Vite server will typically run on `http://localhost:8080`.
+
+## License
+
+This project is licensed under the ISC License.
