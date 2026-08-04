@@ -24,14 +24,14 @@ const parseSizeLimit = (name: string, fallback: string): string => {
 };
 
 const parseSameSite = (value?: string): CookieOptions["sameSite"] => {
-  if (!value) return "lax";
+  if (!value) return process.env.NODE_ENV === "production" ? "none" : "lax";
 
   const normalized = value.toLowerCase();
   if (normalized === "strict" || normalized === "lax" || normalized === "none") {
-    return normalized;
+    return normalized as CookieOptions["sameSite"];
   }
 
-  return "lax";
+  return process.env.NODE_ENV === "production" ? "none" : "lax";
 };
 
 const parseUrl = (value: string, name: string): string => {

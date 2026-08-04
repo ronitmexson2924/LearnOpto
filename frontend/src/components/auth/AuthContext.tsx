@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   isAuthenticated: false,
-  refetchUser: () => {},
+  refetchUser: () => { },
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

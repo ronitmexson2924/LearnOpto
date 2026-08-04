@@ -428,12 +428,12 @@ export default function Dashboard() {
     activeFilter === "all"
       ? rawResources
       : rawResources.filter((r) => {
-          if (activeFilter === "video") return r.type === "youtube";
-          if (activeFilter === "audio") return r.type === "podcast";
-          if (activeFilter === "docs") return r.type === "documentation";
-          if (activeFilter === "course") return r.type === "course";
-          return true;
-        });
+        if (activeFilter === "video") return r.type === "youtube";
+        if (activeFilter === "audio") return r.type === "podcast";
+        if (activeFilter === "docs") return r.type === "documentation";
+        if (activeFilter === "course") return r.type === "course";
+        return true;
+      });
 
   return (
     <motion.div
@@ -521,21 +521,19 @@ export default function Dashboard() {
                 <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/80">
                   <button
                     onClick={() => setViewMode("results")}
-                    className={`px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-lg text-xs font-medium transition-all ${
-                      viewMode === "results"
+                    className={`px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-lg text-xs font-medium transition-all ${viewMode === "results"
                         ? "bg-card text-foreground shadow-sm font-semibold"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     Results
                   </button>
                   <button
                     onClick={() => setViewMode("saved")}
-                    className={`px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
-                      viewMode === "saved"
+                    className={`px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${viewMode === "saved"
                         ? "bg-card text-foreground shadow-sm font-semibold"
                         : "text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     <BookmarkCheck className="w-3.5 h-3.5 text-primary" />
                     Saved ({savedResourcesData?.resources?.length || 0})
@@ -554,11 +552,10 @@ export default function Dashboard() {
                   <button
                     key={f.key}
                     onClick={() => setActiveFilter(f.key)}
-                    className={`px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-                      activeFilter === f.key
+                    className={`px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${activeFilter === f.key
                         ? "bg-primary/10 text-primary border border-primary/20 font-semibold"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
+                      }`}
                   >
                     {f.label}
                   </button>
@@ -610,8 +607,8 @@ export default function Dashboard() {
                       ? "Nothing saved yet — click the bookmark icon on any resource to save it here."
                       : `No ${activeFilter} saved resources found.`
                     : activeFilter === "all"
-                    ? "Enter a topic above to generate a curated learning feed."
-                    : `No ${activeFilter} resources found.`}
+                      ? "Enter a topic above to generate a curated learning feed."
+                      : `No ${activeFilter} resources found.`}
                 </p>
               </div>
             )}
@@ -652,11 +649,10 @@ export default function Dashboard() {
                       setActiveFeedId(query.id);
                       setViewMode("results");
                     }}
-                    className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-start group ${
-                      activeFeedId === query.id || (!activeFeedId && !searchResults && i === 0 && viewMode === "results")
+                    className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-start group ${activeFeedId === query.id || (!activeFeedId && !searchResults && i === 0 && viewMode === "results")
                         ? "bg-card border-primary shadow-sm"
                         : "bg-card/60 border-border hover:border-primary/50 hover:bg-card"
-                    }`}
+                      }`}
                   >
                     <div className="flex-1 min-w-0 pr-2">
                       <p className="text-xs font-medium text-foreground truncate">
@@ -742,11 +738,10 @@ export default function Dashboard() {
                   <button
                     key={fmt.id}
                     onClick={toggleFormat}
-                    className={`px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium transition-all ${
-                      isSelected
+                    className={`px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium transition-all ${isSelected
                         ? "bg-primary text-primary-foreground shadow-sm font-semibold"
                         : "bg-card border border-border text-muted-foreground hover:text-foreground"
-                    }`}
+                      }`}
                   >
                     {fmt.label}
                   </button>
@@ -830,11 +825,10 @@ export default function Dashboard() {
                           setViewMode("results");
                           setIsMobileSidebarOpen(false);
                         }}
-                        className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-start ${
-                          activeFeedId === query.id || (!activeFeedId && !searchResults && i === 0 && viewMode === "results")
+                        className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-start ${activeFeedId === query.id || (!activeFeedId && !searchResults && i === 0 && viewMode === "results")
                             ? "bg-card border-primary shadow-sm"
                             : "bg-card/60 border-border hover:border-primary/50 hover:bg-card"
-                        }`}
+                          }`}
                       >
                         <div className="flex-1 min-w-0 pr-2">
                           <p className="text-xs font-medium text-foreground truncate">
@@ -917,11 +911,10 @@ export default function Dashboard() {
                       <button
                         key={fmt.id}
                         onClick={toggleFormat}
-                        className={`px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium transition-all ${
-                          isSelected
+                        className={`px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium transition-all ${isSelected
                             ? "bg-primary text-primary-foreground shadow-sm font-semibold"
                             : "bg-card border border-border text-muted-foreground hover:text-foreground"
-                        }`}
+                          }`}
                       >
                         {fmt.label}
                       </button>

@@ -115,7 +115,7 @@ const Login = () => {
       {/* Main Split-Screen Layout */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12 z-10">
         <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
-          
+
           {/* Left Column: Branding & Feature List */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
