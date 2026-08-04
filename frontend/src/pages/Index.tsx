@@ -109,7 +109,7 @@ export default function Index() {
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent border border-primary/20 text-xs font-semibold text-accent-foreground shadow-sm"
             >
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span>Gemini 2.5 AI & Real-Time Link Validation</span>
+              <span>✨ Built for curious minds & fast learners</span>
             </motion.div>
 
             {/* Headline */}
@@ -119,8 +119,8 @@ export default function Index() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] font-poppins"
             >
-              Master any subject,{" "}
-              <span className="text-primary underline decoration-primary/30 underline-offset-8">faster.</span>
+              Stop drowning in tabs.{" "}
+              <span className="text-primary underline decoration-primary/30 underline-offset-8">Start actually learning.</span>
             </motion.h1>
 
             {/* Subhead */}
@@ -130,7 +130,7 @@ export default function Index() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
             >
-              Tell LearnOpto what you want to learn. Our AI curates high-density YouTube videos, podcasts, documentation, and courses — automatically verified to eliminate broken links.
+              Tell LearnOpto what you're trying to master today. We cut through the search noise to handpick the best YouTube videos, podcasts, technical docs, and courses — guaranteed live with zero dead links.
             </motion.p>
 
             {/* CTA Buttons */}
@@ -153,9 +153,9 @@ export default function Index() {
                 onClick={() => navigateTo("/about")}
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto h-12 px-6 text-sm font-medium border-border/80 text-foreground hover:bg-muted rounded-xl transition-all"
+                className="w-full sm:w-auto h-12 px-6 text-sm font-medium border-border/80 text-foreground hover:bg-foreground hover:text-background hover:border-foreground rounded-xl transition-all duration-300"
               >
-                About the Vision
+                Meet the Creator
               </Button>
             </motion.div>
           </div>
@@ -168,10 +168,10 @@ export default function Index() {
             className="flex flex-wrap justify-center items-center gap-6 sm:gap-10 mt-12 sm:mt-16 text-muted-foreground/80"
           >
             {[
-              { icon: Play, label: "YouTube Videos" },
+              { icon: Play, label: "YouTube Tutorials" },
               { icon: Headphones, label: "Podcasts & Audio" },
-              { icon: FileText, label: "Official Docs" },
-              { icon: BookOpen, label: "Online Courses" },
+              { icon: FileText, label: "Hand-Picked Docs" },
+              { icon: BookOpen, label: "Structured Courses" },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="flex items-center gap-2 text-xs sm:text-sm font-medium">
                 <Icon className="w-4 h-4 text-primary" />
@@ -256,10 +256,10 @@ export default function Index() {
           <div className="container mx-auto px-4 sm:px-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center max-w-4xl mx-auto">
               {[
-                { number: "99.4%", label: "Link Validity Rate" },
+                { number: "100%", label: "Live & Verified Links" },
                 { number: "4 Formats", label: "Video, Audio, Docs & Courses" },
-                { number: "< 1s", label: "Gemini 2.5 Flash Curation" },
-                { number: "100% Free", label: "No Ad Noise or Paywalls" },
+                { number: "Instant", label: "AI Smart Curation" },
+                { number: "Free Forever", label: "No Paywalls or Ad Noise" },
               ].map((stat, i) => (
                 <div key={i} className="space-y-1">
                   <div className="text-2xl sm:text-3xl font-extrabold font-poppins text-primary">{stat.number}</div>
@@ -278,12 +278,12 @@ export default function Index() {
           }`}
         >
           <div className="text-center mb-14 max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Features</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Why LearnOpto</span>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight font-poppins">
-              Everything you need to study effectively
+              Everything you need to master anything, stress-free
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Designed to eliminate search overload and surface high-density educational content.
+              Say goodbye to 45-minute search rabbit holes. LearnOpto does the heavy lifting so you can focus on building.
             </p>
           </div>
 
@@ -291,33 +291,33 @@ export default function Index() {
             {[
               {
                 icon: Sparkles,
-                title: "Multi-Source AI Curation",
-                desc: "Gemini 2.5 Flash evaluates topic relevance to recommend YouTube videos, podcasts, official docs, and courses.",
+                title: "Smart Multi-Source Curation",
+                desc: "We bring together the best YouTube tutorials, technical documentation, podcast episodes, and structured courses into one clean view.",
               },
               {
                 icon: ShieldCheck,
-                title: "Parallel URL Verification",
-                desc: "Automated HEAD & GET requests verify links in real-time, filtering out 404s and hallucinated URLs before you click.",
+                title: "Zero Dead Links",
+                desc: "Nothing ruins your study flow like a broken tutorial from 2014. Every link is verified live before it reaches your screen.",
               },
               {
                 icon: Bookmark,
-                title: "Personal Library",
-                desc: "Bookmark your favorite resources with one click to build a structured, permanent knowledge base.",
+                title: "Your Personal Study Desk",
+                desc: "Save the gems you discover with one click. Build an organized library of your favorite learning materials to revisit anytime.",
               },
               {
                 icon: Sliders,
-                title: "Format Weighting & Preferences",
-                desc: "Tailor AI results to match your learning style — prioritize video tutorials, audio podcasts, or technical docs.",
+                title: "Learns How You Learn Best",
+                desc: "Prefer watching a quick video over reading dense documentation? Fine-tune your format preferences so AI prioritizes your favorite media.",
               },
               {
                 icon: BarChart3,
-                title: "Activity & Search Analytics",
-                desc: "Track total searches, saved items, and viewed resources over time to stay motivated.",
+                title: "Track Your Momentum",
+                desc: "Watch your curiosity turn into real progress. Keep track of your search history, saved items, and learning milestones over time.",
               },
               {
                 icon: Lock,
-                title: "Seamless OAuth Security",
-                desc: "1-click authentication with Google & GitHub. HTTP-only secure cookies keep your session safe.",
+                title: "Hassle-Free & Secure",
+                desc: "Sign in seamlessly with 1-click Google, GitHub, or passwordless Passkeys. Your personal library stays synced across all your devices.",
               },
             ].map(({ icon: Icon, title, desc }, i) => (
               <div
@@ -342,9 +342,9 @@ export default function Index() {
           }`}
         >
           <div className="text-center mb-14 space-y-3 max-w-2xl mx-auto">
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Workflow</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Simple Workflow</span>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight font-poppins">
-              Three steps to curated knowledge
+              How LearnOpto works for you
             </h2>
           </div>
 
@@ -352,18 +352,18 @@ export default function Index() {
             {[
               {
                 step: "01",
-                title: "Enter Topic",
-                desc: "Search any subject — from System Design and Quantum Physics to React and French Grammar.",
+                title: "Type your topic",
+                desc: "Search whatever you're curious about — from System Design and Quantum Physics to React or French Grammar.",
               },
               {
                 step: "02",
-                title: "AI Curation & Validation",
-                desc: "Gemini finds top resources while our backend verifies live URLs in parallel to guarantee reachability.",
+                title: "We filter the noise",
+                desc: "Our AI scans top platforms, checks every URL for live reachability, and handpicks the most relevant resources.",
               },
               {
                 step: "03",
-                title: "Learn & Save",
-                desc: "Explore ranked videos, podcasts, docs, and courses. Bookmark items to your personal library anytime.",
+                title: "Learn & Level Up",
+                desc: "Dive right in without distractions. Save your favorite videos, docs, and courses to your library whenever you want.",
               },
             ].map(({ step, title, desc }) => (
               <div key={step} className="bg-card border border-border/80 rounded-3xl p-7 space-y-3">
@@ -398,7 +398,7 @@ export default function Index() {
                 </h3>
 
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Passionate developer and lead architect behind LearnOpto. Built with a vision to eliminate learning search fatigue by curating high-density AI-verified content.
+                  "I built LearnOpto because I got tired of wasting 45 minutes searching YouTube and Reddit just to find one good 10-minute tutorial. LearnOpto is designed to get you straight to the good stuff so you can spend less time searching and more time creating."
                 </p>
 
                 <div className="pt-2 flex flex-wrap justify-center sm:justify-start items-center gap-3">
@@ -416,9 +416,9 @@ export default function Index() {
                   <Button
                     onClick={() => navigateTo("/about")}
                     variant="outline"
-                    className="rounded-xl border-border text-xs sm:text-sm font-medium"
+                    className="rounded-xl border-border text-xs sm:text-sm font-medium text-foreground hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-300"
                   >
-                    Read Full Vision
+                    Read Full Story
                   </Button>
                 </div>
               </div>
@@ -438,17 +438,17 @@ export default function Index() {
             <div className="absolute bottom-0 left-0 w-60 h-60 bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
 
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-4 relative z-10 font-poppins">
-              Ready to learn smarter?
+              Ready to supercharge your learning?
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-md mx-auto relative z-10">
-              Sign in with Google or GitHub and let AI find the best study resources for your exact goals.
+              Join thousands of self-directed learners skipping search fatigue. Jump straight into the best resources for your next goal.
             </p>
             <Button
               onClick={() => navigateTo("/login")}
               size="lg"
               className="h-12 px-8 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-md rounded-xl transition-all relative z-10"
             >
-              Sign In to Start Learning
+              Start Learning Free
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
