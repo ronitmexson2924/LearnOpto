@@ -20,7 +20,12 @@ model User {
 
   role String @default("user")
 
-  searchCount Int @default(0)
+  searchCount         Int       @default(0)
+  dailySearchCount    Int       @default(0)
+  dailySearchDate     DateTime?
+  totalGeminiRequests Int       @default(0)
+  failedLoginCount    Int       @default(0)
+  lastFailedLoginAt   DateTime?
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

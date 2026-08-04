@@ -8,6 +8,7 @@ import {
   removePasskey,
 } from "../controllers/passkeyController";
 import { requireAuth } from "../middleware/authMiddleware";
+import { passkeyAuthenticationRateLimiter } from "../middleware/rateLimiters";
 
 const router = Router();
 
@@ -16,8 +17,8 @@ router.post("/register/options", requireAuth, registerOptions);
 router.post("/register/verify", requireAuth, registerVerify);
 
 // Authentication is for users logging in
-router.post("/authenticate/options", authenticateOptions);
-router.post("/authenticate/verify", authenticateVerify);
+router.post("/authenticate/options", passkeyAuthenticationRateLimiter, authenticateOptions);
+router.post("/authenticate/verify", passkeyAuthenticationRateLimiter, authenticateVerify);
 
 // Management
 router.get("/list", requireAuth, listPasskeys);

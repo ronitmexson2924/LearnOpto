@@ -1,29 +1,114 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../lib/prisma";
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
-import jwt from "jsonwebtoken";
-
-const prisma = new PrismaClient();
+import { authConfig, passkeyConfig } from "../config/security";
+import { setAuthCookie, signAuthToken } from "../utils/authSession";
+import { schemas, sendValidationError, validateBody, validateEmptyBody } from "../utils/requestValidation";
+import { TemporaryStore } from "../utils/temporaryStore";
 
 // RP Settings
-const rpName = process.env.RP_NAME || "LearnOpto Passkeys";
-const rpID = process.env.RP_ID || "localhost";
-const expectedOrigin = process.env.ORIGIN || "http://localhost:8080";
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
+const rpName = passkeyConfig.rpName;
+const rpID = passkeyConfig.rpID;
+const expectedOrigin = passkeyConfig.expectedOrigins;
+const passkeyChallengeStore = new TemporaryStore<{
+  type: "registration" | "authentication";
+  userId?: string;
+}>();
 
-// Helper to set auth cookie after login
-const setAuthCookie = (res: Response, token: string) => {
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+type PasskeyRegistrationVerifyRequest = {
+  id: string;
+  rawId: string;
+  response: Record<string, unknown>;
+  type: "public-key";
+  authenticatorAttachment?: string;
+  clientExtensionResults?: Record<string, unknown>;
+};
+
+type PasskeyAuthenticationVerifyRequest = PasskeyRegistrationVerifyRequest;
+
+const setChallengeCookie = (res: Response, challenge: string): void => {
+  res.cookie("passkey_challenge", challenge, {
+    ...authConfig.cookieOptions,
+    maxAge: passkeyConfig.challengeTtlMs,
   });
+};
+
+const clearChallengeCookie = (res: Response): void => {
+  res.clearCookie("passkey_challenge", authConfig.cookieOptions);
+};
+
+const consumeChallenge = (
+  challenge: unknown,
+  expectedType: "registration" | "authentication",
+  userId?: string
+): boolean => {
+  if (typeof challenge !== "string" || !challenge) {
+    return false;
+  }
+
+  const stored = passkeyChallengeStore.consume(challenge);
+  if (!stored || stored.type !== expectedType) {
+    return false;
+  }
+
+  return !userId || stored.userId === userId;
+};
+
+const validateNestedPasskeyResponse = (
+  response: Record<string, unknown>,
+  allowedFields: readonly string[],
+  requiredStringFields: readonly string[]
+): string[] => {
+  const errors: string[] = [];
+  const allowed = new Set(allowedFields);
+
+  for (const key of Object.keys(response)) {
+    if (!allowed.has(key)) {
+      errors.push(`Unexpected property: response.${key}`);
+    }
+  }
+
+  for (const field of requiredStringFields) {
+    if (typeof response[field] !== "string" || response[field].length === 0) {
+      errors.push(`response.${field} is required`);
+    }
+  }
+
+  const transports = response.transports;
+  if (transports !== undefined) {
+    if (!Array.isArray(transports) || transports.some((transport) => typeof transport !== "string")) {
+      errors.push("response.transports must be an array of strings");
+    }
+  }
+
+  const publicKeyAlgorithm = response.publicKeyAlgorithm;
+  if (publicKeyAlgorithm !== undefined && typeof publicKeyAlgorithm !== "number") {
+    errors.push("response.publicKeyAlgorithm must be a number");
+  }
+
+  const userHandle = response.userHandle;
+  if (userHandle !== undefined && userHandle !== null && typeof userHandle !== "string") {
+    errors.push("response.userHandle must be a string or null");
+  }
+
+  return errors;
+};
+
+const trackFailedPasskeyLogin = async (userId: string): Promise<void> => {
+  await prisma.user
+    .update({
+      where: { id: userId },
+      data: {
+        failedLoginCount: { increment: 1 },
+        lastFailedLoginAt: new Date(),
+      },
+    })
+    .catch((error) => console.error("Failed passkey login tracking error:", error));
 };
 
 /**
@@ -32,6 +117,12 @@ const setAuthCookie = (res: Response, token: string) => {
  */
 export const registerOptions = async (req: Request, res: Response): Promise<void> => {
   try {
+    const validation = validateEmptyBody(req.body);
+    if (!validation.ok) {
+      sendValidationError(res, validation.errors);
+      return;
+    }
+
     const userId = (req as any).userId;
     if (!userId) {
       res.status(401).json({ error: "Unauthorized" });
@@ -67,12 +158,12 @@ export const registerOptions = async (req: Request, res: Response): Promise<void
     });
 
     // Save challenge in a cookie securely for verifying in the next step
-    res.cookie("passkey_challenge", options.challenge, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 5 * 60 * 1000, // 5 minutes
-      sameSite: "lax",
-    });
+    passkeyChallengeStore.set(
+      options.challenge,
+      { type: "registration", userId },
+      passkeyConfig.challengeTtlMs
+    );
+    setChallengeCookie(res, options.challenge);
 
     res.status(200).json(options);
   } catch (error) {
@@ -86,26 +177,54 @@ export const registerOptions = async (req: Request, res: Response): Promise<void
  */
 export const registerVerify = async (req: Request, res: Response): Promise<void> => {
   try {
+    const validation = validateBody<PasskeyRegistrationVerifyRequest>(
+      req.body,
+      schemas.passkeyRegistrationVerify
+    );
+    if (!validation.ok) {
+      sendValidationError(res, validation.errors);
+      return;
+    }
+
     const userId = (req as any).userId;
     if (!userId) {
       res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
-    const body = req.body;
+    const body = validation.value;
     const expectedChallenge = req.cookies.passkey_challenge;
 
-    if (!expectedChallenge) {
+    if (!consumeChallenge(expectedChallenge, "registration", userId)) {
+      clearChallengeCookie(res);
       res.status(400).json({ error: "Challenge expired or not found" });
       return;
     }
 
-    const verification = await verifyRegistrationResponse({
-      response: body,
-      expectedChallenge,
-      expectedOrigin,
-      expectedRPID: rpID,
-    });
+    const nestedErrors = validateNestedPasskeyResponse(
+      body.response,
+      ["attestationObject", "clientDataJSON", "transports", "publicKey", "publicKeyAlgorithm", "authenticatorData"],
+      ["attestationObject", "clientDataJSON"]
+    );
+    if (nestedErrors.length > 0) {
+      clearChallengeCookie(res);
+      sendValidationError(res, nestedErrors);
+      return;
+    }
+
+    let verification;
+    try {
+      verification = await verifyRegistrationResponse({
+        response: body as any,
+        expectedChallenge,
+        expectedOrigin,
+        expectedRPID: rpID,
+      });
+    } catch (error) {
+      clearChallengeCookie(res);
+      res.status(400).json({ error: "Verification failed" });
+      return;
+    }
 
     if (verification.verified && verification.registrationInfo) {
       const {
@@ -128,10 +247,11 @@ export const registerVerify = async (req: Request, res: Response): Promise<void>
       });
 
       // Clear the challenge
-      res.clearCookie("passkey_challenge");
+      clearChallengeCookie(res);
 
       res.status(200).json({ verified: true });
     } else {
+      clearChallengeCookie(res);
       res.status(400).json({ error: "Verification failed" });
     }
   } catch (error) {
@@ -146,17 +266,23 @@ export const registerVerify = async (req: Request, res: Response): Promise<void>
  */
 export const authenticateOptions = async (req: Request, res: Response): Promise<void> => {
   try {
+    const validation = validateEmptyBody(req.body);
+    if (!validation.ok) {
+      sendValidationError(res, validation.errors);
+      return;
+    }
+
     const options = await generateAuthenticationOptions({
       rpID,
       userVerification: "preferred",
     });
 
-    res.cookie("passkey_challenge", options.challenge, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 5 * 60 * 1000,
-      sameSite: "lax",
-    });
+    passkeyChallengeStore.set(
+      options.challenge,
+      { type: "authentication" },
+      passkeyConfig.challengeTtlMs
+    );
+    setChallengeCookie(res, options.challenge);
 
     res.status(200).json(options);
   } catch (error) {
@@ -170,11 +296,32 @@ export const authenticateOptions = async (req: Request, res: Response): Promise<
  */
 export const authenticateVerify = async (req: Request, res: Response): Promise<void> => {
   try {
-    const body = req.body;
+    const validation = validateBody<PasskeyAuthenticationVerifyRequest>(
+      req.body,
+      schemas.passkeyAuthenticationVerify
+    );
+    if (!validation.ok) {
+      sendValidationError(res, validation.errors);
+      return;
+    }
+
+    const body = validation.value;
     const expectedChallenge = req.cookies.passkey_challenge;
 
-    if (!expectedChallenge) {
+    if (!consumeChallenge(expectedChallenge, "authentication")) {
+      clearChallengeCookie(res);
       res.status(400).json({ error: "Challenge expired or not found" });
+      return;
+    }
+
+    const nestedErrors = validateNestedPasskeyResponse(
+      body.response,
+      ["authenticatorData", "clientDataJSON", "signature", "userHandle"],
+      ["authenticatorData", "clientDataJSON", "signature"]
+    );
+    if (nestedErrors.length > 0) {
+      clearChallengeCookie(res);
+      sendValidationError(res, nestedErrors);
       return;
     }
 
@@ -185,22 +332,31 @@ export const authenticateVerify = async (req: Request, res: Response): Promise<v
     });
 
     if (!passkey) {
+      clearChallengeCookie(res);
       res.status(404).json({ error: "Credential not found" });
       return;
     }
 
-    const verification = await verifyAuthenticationResponse({
-      response: body,
-      expectedChallenge,
-      expectedOrigin,
-      expectedRPID: rpID,
-      credential: {
-        id: passkey.credentialID,
-        publicKey: new Uint8Array(passkey.publicKey),
-        counter: Number(passkey.counter),
-        transports: passkey.transports ? JSON.parse(passkey.transports) : undefined,
-      },
-    });
+    let verification;
+    try {
+      verification = await verifyAuthenticationResponse({
+        response: body as any,
+        expectedChallenge,
+        expectedOrigin,
+        expectedRPID: rpID,
+        credential: {
+          id: passkey.credentialID,
+          publicKey: new Uint8Array(passkey.publicKey),
+          counter: Number(passkey.counter),
+          transports: passkey.transports ? JSON.parse(passkey.transports) : undefined,
+        },
+      });
+    } catch (error) {
+      await trackFailedPasskeyLogin(passkey.userId);
+      clearChallengeCookie(res);
+      res.status(400).json({ error: "Verification failed" });
+      return;
+    }
 
     if (verification.verified && verification.authenticationInfo) {
       // Update counter to prevent replay attacks
@@ -210,20 +366,26 @@ export const authenticateVerify = async (req: Request, res: Response): Promise<v
       });
 
       // Clear the challenge
-      res.clearCookie("passkey_challenge");
+      clearChallengeCookie(res);
 
       // Update last login
       await prisma.user.update({
         where: { id: passkey.userId },
-        data: { lastLoginAt: new Date() },
+        data: {
+          lastLoginAt: new Date(),
+          failedLoginCount: 0,
+          lastFailedLoginAt: null,
+        },
       });
 
       // Issue JWT session
-      const token = jwt.sign({ userId: passkey.userId }, JWT_SECRET, { expiresIn: "7d" });
+      const token = signAuthToken(passkey.userId);
       setAuthCookie(res, token);
 
       res.status(200).json({ verified: true, user: { id: passkey.user.id, email: passkey.user.email, name: passkey.user.name } });
     } else {
+      await trackFailedPasskeyLogin(passkey.userId);
+      clearChallengeCookie(res);
       res.status(400).json({ error: "Verification failed" });
     }
   } catch (error) {
@@ -274,12 +436,14 @@ export const removePasskey = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    await prisma.passkeyCredential.delete({
-      where: {
-        id,
-        userId: userId, // Security check
-      },
+    const deleted = await prisma.passkeyCredential.deleteMany({
+      where: { id, userId },
     });
+
+    if (deleted.count === 0) {
+      res.status(404).json({ error: "Passkey not found or unauthorized" });
+      return;
+    }
 
     res.status(200).json({ success: true });
   } catch (error) {

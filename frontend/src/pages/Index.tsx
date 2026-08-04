@@ -1,285 +1,493 @@
+import { useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Sparkles } from "lucide-react";
+import {
+  Search,
+  BookOpen,
+  Bookmark,
+  ArrowRight,
+  Sparkles,
+  Play,
+  FileText,
+  Headphones,
+  CheckCircle2,
+  ShieldCheck,
+  Zap,
+  Sliders,
+  BarChart3,
+  Lock,
+  Globe,
+  ExternalLink,
+} from "lucide-react";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { navigateTo } from "@/lib/navigation";
 
-const Index = () => {
-  const navigate = useNavigate();
-
+export default function Index() {
   const featuresAnimation = useScrollAnimation();
-  const testimonialsAnimation = useScrollAnimation();
+  const howItWorksAnimation = useScrollAnimation();
+  const demoAnimation = useScrollAnimation();
+  const ctaAnimation = useScrollAnimation();
+
+  const [activeDemoTab, setActiveDemoTab] = useState<"all" | "video" | "docs">("all");
+
+  const sampleDemoItems = [
+    {
+      title: "Quantum Computing for Beginners",
+      source: "YouTube • IBM Quantum",
+      type: "video",
+      icon: Play,
+      badge: "Video Tutorial",
+      desc: "Comprehensive intro covering qubits, superposition, and quantum gates.",
+    },
+    {
+      title: "Qiskit Official Documentation & Guides",
+      source: "Qiskit.org",
+      type: "docs",
+      icon: FileText,
+      badge: "Documentation",
+      desc: "Interactive Python notebook guides and quantum algorithm references.",
+    },
+    {
+      title: "The Quantum Hardware Revolution",
+      source: "Podcast • Physics World",
+      type: "audio",
+      icon: Headphones,
+      badge: "Podcast Episode",
+      desc: "Deep dive into superconducting chips, ion traps, and error correction.",
+    },
+  ];
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0, scale: 0.98 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
-      className="min-h-screen relative overflow-hidden font-inter bg-background"
+      className="min-h-screen relative overflow-hidden font-inter bg-background text-foreground"
     >
+      {/* Ambient background glow orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute -top-[30%] -right-[15%] w-[800px] h-[800px] rounded-full bg-primary/[0.04] blur-[140px]" />
+        <div className="absolute -bottom-[20%] -left-[10%] w-[600px] h-[600px] rounded-full bg-primary/[0.06] blur-[120px]" />
+      </div>
 
-      <div className="relative z-10">
-        <header className="fixed top-0 left-0 right-0 p-4 md:p-6 z-50 bg-background/80 backdrop-blur-md border-b border-border/40">
-          <div className="container mx-auto flex items-center justify-between">
-            <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <span className="text-xl md:text-2xl font-black text-foreground tracking-tighter uppercase">
-                LearnOpto
-              </span>
-            </a>
-            
-            <nav className="hidden md:flex items-center gap-8 text-[11px] font-mono tracking-widest uppercase text-muted-foreground">
-              <a href="#" className="text-primary border-b-2 border-primary pb-1">Discover</a>
-              <a href="#" className="hover:text-foreground transition-colors pb-1">Platform</a>
-              <a href="#" className="hover:text-foreground transition-colors pb-1">Research</a>
-              <a href="#" className="hover:text-foreground transition-colors pb-1">API</a>
+      {/* ─── HEADER ─── */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40">
+        <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+              <Sparkles className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <span className="text-lg font-semibold tracking-tight font-poppins">
+              LearnOpto
+            </span>
+          </a>
+
+          <div className="flex items-center gap-4 sm:gap-6">
+            <nav className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-medium text-muted-foreground">
+              <a href="/about" className="hover:text-foreground transition-colors">About Creator</a>
+              <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
+              <a href="/terms" className="hover:text-foreground transition-colors">Terms of Use</a>
             </nav>
 
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
-            </div>
+            <ThemeToggle />
+            <Button
+              onClick={() => navigateTo("/login")}
+              size="sm"
+              className="text-xs sm:text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm h-9 px-4 rounded-xl transition-all"
+            >
+              Sign In
+            </Button>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="container mx-auto px-4 py-12 md:py-16 pt-24">
-          {/* Hero Section */}
-          <section className="relative flex flex-col items-center justify-center min-h-[75vh] md:min-h-[70vh] space-y-8 md:space-y-10">
-            <div className="text-center space-y-6 animate-fade-in max-w-5xl relative z-10">
-              <div className="inline-flex items-center justify-center gap-2 px-3 py-1 mb-4 bg-primary/10 border border-primary/20 rounded-full">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-primary font-bold">Intellectual Command Center</span>
-              </div>
-              
-              <h1 className="text-6xl sm:text-7xl md:text-9xl font-black uppercase tracking-tighter font-inter text-foreground leading-none">
-                LearnOpto
-              </h1>
-              
-              <p className="text-xl sm:text-2xl md:text-3xl text-foreground font-bold max-w-4xl mx-auto px-4 uppercase tracking-wide leading-tight">
-                The AI Agent Designed to Resolve All Your Study Needs
-              </p>
-              
-              <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4 pb-8 leading-relaxed">
-                Discover curated learning resources from YouTube, podcasts, documentation, and courses—all ranked by quality, precision, and relevance to your unique learning path.
-              </p>
+      {/* ─── HERO SECTION ─── */}
+      <main>
+        <section className="container mx-auto px-4 sm:px-6 pt-28 pb-16 sm:pt-36 sm:pb-24 lg:pt-44 lg:pb-32">
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            {/* Pill Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent border border-primary/20 text-xs font-semibold text-accent-foreground shadow-sm"
+            >
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span>Gemini 2.5 AI & Real-Time Link Validation</span>
+            </motion.div>
 
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
-                <Button 
-                  onClick={() => navigate('/login')}
-                  className="h-14 px-8 bg-primary text-primary-foreground font-bold uppercase tracking-widest rounded-none hover:bg-primary/90 transition-colors shadow-[4px_4px_0px_rgba(0,0,0,0.2)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.1)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]"
-                >
-                  Get Started
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="h-14 px-8 border-border bg-transparent text-foreground font-bold uppercase tracking-widest rounded-none hover:bg-foreground/5 transition-colors shadow-[4px_4px_0px_rgba(0,0,0,0.1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,0.05)] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px]"
-                >
-                  Explore Features
-                </Button>
-              </div>
-            </div>
-          </section>
+            {/* Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] font-poppins"
+            >
+              Master any subject,{" "}
+              <span className="text-primary underline decoration-primary/30 underline-offset-8">faster.</span>
+            </motion.h1>
 
-          {/* Features Section */}
-              <section 
-                ref={featuresAnimation.ref}
-                className={`mt-20 md:mt-32 mb-16 md:mb-20 transition-all duration-1000 ${
-                  featuresAnimation.isVisible 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-10'
-                }`}
+            {/* Subhead */}
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+            >
+              Tell LearnOpto what you want to learn. Our AI curates high-density YouTube videos, podcasts, documentation, and courses — automatically verified to eliminate broken links.
+            </motion.p>
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2"
+            >
+              <Button
+                onClick={() => navigateTo("/login")}
+                size="lg"
+                className="w-full sm:w-auto h-12 px-8 text-sm sm:text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg rounded-xl transition-all flex items-center gap-2"
               >
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
-                  <div className="max-w-2xl">
-                    <span className="text-[10px] font-mono tracking-widest uppercase text-primary font-bold mb-4 block">Core Infrastructure</span>
-                    <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-foreground mb-4">
-                      Why Choose<br />LearnOpto?
-                    </h2>
-                    <p className="text-muted-foreground text-lg">
-                      Your intelligent companion for discovering the best learning resources across the digital landscape.
-                    </p>
-                  </div>
-                  <div className="flex gap-4">
-                    <Button variant="outline" size="icon" className="rounded-none border-border hover:bg-border bg-transparent w-12 h-12">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                    </Button>
-                    <Button variant="outline" size="icon" className="rounded-none border-border hover:bg-border bg-transparent w-12 h-12">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                    </Button>
-                  </div>
-                </div>
+                Start Learning Free
+                <ArrowRight className="w-4 h-4" />
+              </Button>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Card 1 */}
-                  <div className="bg-card border border-border p-8 hover:border-primary/50 transition-colors flex flex-col justify-between min-h-[300px]">
-                    <div>
-                      <div className="w-12 h-12 border border-primary flex items-center justify-center mb-8">
-                        <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                      </div>
-                      <h3 className="text-xl font-bold uppercase tracking-wide text-card-foreground mb-3">Curated Sources</h3>
-                      <p className="text-card-foreground/70">
-                        We filter through the noise to provide only the highest quality content from verified educators and technical experts.
-                      </p>
-                    </div>
-                  </div>
+              <Button
+                onClick={() => navigateTo("/about")}
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto h-12 px-6 text-sm font-medium border-border/80 text-foreground hover:bg-muted rounded-xl transition-all"
+              >
+                About the Vision
+              </Button>
+            </motion.div>
+          </div>
 
-                  {/* Card 2 */}
-                  <div className="bg-card border border-border p-8 hover:border-primary/50 transition-colors flex flex-col sm:flex-row gap-6 justify-between min-h-[300px] relative overflow-hidden group">
-                    <div className="flex-1 z-10">
-                      <div className="w-12 h-12 border border-primary flex items-center justify-center mb-8 bg-card">
-                        <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                      </div>
-                      <h3 className="text-xl font-bold uppercase tracking-wide text-card-foreground mb-3">AI-Powered Insights</h3>
-                      <p className="text-card-foreground/70 mb-6">
-                        Our proprietary AI analyze curriculum depth, creator reputation, and community feedback to rank resources with surgical precision.
-                      </p>
-                      <a href="#" className="text-primary text-xs font-mono font-bold uppercase tracking-widest inline-flex items-center gap-2 hover:opacity-80">
-                        Explore Methodology <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                      </a>
-                    </div>
-                    <div className="sm:w-[200px] h-[200px] sm:h-auto shrink-0 relative opacity-50 group-hover:opacity-100 transition-opacity">
-                      <img src="/features/chip.jpg" alt="AI Chip" className="absolute inset-0 w-full h-full object-cover" />
-                    </div>
-                  </div>
-
-                  {/* Card 3 */}
-                  <div className="bg-card border border-border p-8 hover:border-primary/50 transition-colors flex flex-col sm:flex-row gap-6 justify-between min-h-[300px] relative overflow-hidden group">
-                    <div className="sm:w-[250px] h-[200px] sm:h-auto shrink-0 relative opacity-40 group-hover:opacity-80 transition-opacity">
-                      <img src="/features/globe.jpg" alt="Globe" className="absolute inset-0 w-full h-full object-cover mix-blend-screen grayscale group-hover:grayscale-0 transition-all" />
-                    </div>
-                    <div className="flex-1 z-10 flex flex-col justify-end">
-                      <div className="w-12 h-12 border border-primary flex items-center justify-center mb-8 bg-card">
-                        <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                      </div>
-                      <h3 className="text-xl font-bold uppercase tracking-wide text-card-foreground mb-3">Multi-Source Sync</h3>
-                      <p className="text-card-foreground/70 mb-6">
-                        One interface for YouTube, Podcasts, Substack, and GitHub. Build a holistic learning path across fragmented platforms.
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="px-2 py-1 bg-white/5 text-white/70 text-[10px] font-mono uppercase tracking-widest">Video</span>
-                        <span className="px-2 py-1 bg-white/5 text-white/70 text-[10px] font-mono uppercase tracking-widest">Audio</span>
-                        <span className="px-2 py-1 bg-white/5 text-white/70 text-[10px] font-mono uppercase tracking-widest">Code</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 4 */}
-                  <div className="bg-card border border-border p-8 hover:border-primary/50 transition-colors flex flex-col justify-between min-h-[300px]">
-                    <div>
-                      <div className="w-12 h-12 border border-primary flex items-center justify-center mb-8">
-                        <svg className="w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                      </div>
-                      <h3 className="text-xl font-bold uppercase tracking-wide text-card-foreground mb-3">Skill Verification</h3>
-                      <p className="text-card-foreground/70">
-                        Track your progress across sources and validate your learning with AI-generated assessments and peer reviews.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Stats Section */}
-              <section className="py-20 border-y border-border/50 my-20">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-                  <div>
-                    <div className="text-5xl md:text-6xl font-black text-primary tracking-tighter mb-2">500K+</div>
-                    <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/70">Resources Index</div>
-                  </div>
-                  <div>
-                    <div className="text-5xl md:text-6xl font-black text-primary tracking-tighter mb-2">98%</div>
-                    <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/70">Precision Rate</div>
-                  </div>
-                  <div>
-                    <div className="text-5xl md:text-6xl font-black text-primary tracking-tighter mb-2">12M</div>
-                    <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/70">Study Hours</div>
-                  </div>
-                  <div>
-                    <div className="text-5xl md:text-6xl font-black text-primary tracking-tighter mb-2">24/7</div>
-                    <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/70">Agent Support</div>
-                  </div>
-                </div>
-              </section>
-
-              {/* CTA Section */}
-              <section className="mb-32">
-                <div className="border border-primary bg-gradient-to-br from-primary/10 to-transparent p-12 md:p-20 text-center relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px]" />
-                  <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-foreground mb-12 relative z-10">
-                    Ready to Master Your Field?
-                  </h2>
-                  <div className="flex flex-col sm:flex-row justify-center gap-6 relative z-10">
-                    <Button className="h-14 px-8 bg-primary text-primary-foreground font-bold uppercase tracking-widest rounded-none hover:bg-primary/90">
-                      Build My Curriculum
-                    </Button>
-                    <Button variant="outline" className="h-14 px-8 border-border bg-transparent text-foreground font-bold uppercase tracking-widest rounded-none hover:bg-foreground/5">
-                      See Platform Demo
-                    </Button>
-                  </div>
-                </div>
-              </section>
-        </main>
-
-        {/* Footer */}
-        <footer className="relative z-10 border-t border-border bg-background">
-          <div className="container mx-auto px-4 py-16 md:py-20">
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-12 md:gap-8">
-              <div className="md:col-span-2">
-                <a href="/" className="inline-block mb-6 hover:opacity-80 transition-opacity">
-                  <h3 className="text-2xl font-black tracking-tighter uppercase text-foreground">LearnOpto</h3>
-                </a>
-                <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground max-w-xs leading-relaxed">
-                  The elite standard for artificial intelligence in academic resource discovery.
-                </p>
+          {/* Platform Source Badges */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.55 }}
+            className="flex flex-wrap justify-center items-center gap-6 sm:gap-10 mt-12 sm:mt-16 text-muted-foreground/80"
+          >
+            {[
+              { icon: Play, label: "YouTube Videos" },
+              { icon: Headphones, label: "Podcasts & Audio" },
+              { icon: FileText, label: "Official Docs" },
+              { icon: BookOpen, label: "Online Courses" },
+            ].map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+                <Icon className="w-4 h-4 text-primary" />
+                <span>{label}</span>
               </div>
-              
-              <div className="space-y-6">
-                <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-foreground font-bold">Protocol</h4>
-                <div className="flex flex-col space-y-4 text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
-                  <a href="#" className="hover:text-primary transition-colors">Privacy</a>
-                  <a href="#" className="hover:text-primary transition-colors">Security</a>
-                </div>
+            ))}
+          </motion.div>
+        </section>
+
+        {/* ─── LIVE PLATFORM INTERACTIVE PREVIEW ─── */}
+        <section
+          ref={demoAnimation.ref}
+          className={`container mx-auto px-4 sm:px-6 pb-20 transition-all duration-700 ${
+            demoAnimation.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="max-w-4xl mx-auto bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-border">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                <span className="text-xs font-mono text-muted-foreground ml-2 truncate">
+                  query: "Quantum Computing Fundamentals"
+                </span>
               </div>
 
-              <div className="space-y-6">
-                <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-foreground font-bold">Platform</h4>
-                <div className="flex flex-col space-y-4 text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
-                  <a href="#" className="hover:text-primary transition-colors">Status</a>
-                  <a href="#" className="hover:text-primary transition-colors">API Docs</a>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-foreground font-bold">Network</h4>
-                <div className="flex flex-col space-y-4 text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
-                  <a href="#" className="hover:text-primary transition-colors">X / Twitter</a>
-                  <a href="#" className="hover:text-primary transition-colors">GitHub</a>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-foreground font-bold">Legal</h4>
-                <div className="flex flex-col space-y-4 text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
-                  <a href="#" className="hover:text-primary transition-colors">Terms</a>
-                  <a href="#" className="hover:text-primary transition-colors">Liability</a>
-                </div>
+              <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                {(["all", "video", "docs"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveDemoTab(tab)}
+                    className={`px-3 py-1 rounded-lg text-xs font-medium capitalize transition-all ${
+                      activeDemoTab === tab
+                        ? "bg-primary/10 text-primary border border-primary/20 font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="mt-20 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground">
-                © 2024 LearnOpto Core. All rights reserved.
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-primary font-bold">Systems Operational</span>
+            {/* Sample Result Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+              {sampleDemoItems
+                .filter((item) => activeDemoTab === "all" || item.type === activeDemoTab)
+                .map((item, i) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={i}
+                      className="bg-background border border-border/70 rounded-2xl p-4 flex flex-col justify-between hover:border-primary/40 transition-all group"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary uppercase tracking-wider bg-accent px-2 py-0.5 rounded-md">
+                            <Icon className="w-3 h-3" /> {item.badge}
+                          </span>
+                          <Bookmark className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-foreground font-poppins mb-1 line-clamp-2">
+                          {item.title}
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-3">
+                          {item.desc}
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-mono text-muted-foreground/80 mt-4 block">
+                        {item.source}
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </section>
+
+        {/* ─── METRICS BANNER ─── */}
+        <section className="border-y border-border/50 bg-accent/20 py-12">
+          <div className="container mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center max-w-4xl mx-auto">
+              {[
+                { number: "99.4%", label: "Link Validity Rate" },
+                { number: "4 Formats", label: "Video, Audio, Docs & Courses" },
+                { number: "< 1s", label: "Gemini 2.5 Flash Curation" },
+                { number: "100% Free", label: "No Ad Noise or Paywalls" },
+              ].map((stat, i) => (
+                <div key={i} className="space-y-1">
+                  <div className="text-2xl sm:text-3xl font-extrabold font-poppins text-primary">{stat.number}</div>
+                  <div className="text-xs text-muted-foreground font-medium">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ─── FEATURES GRID ─── */}
+        <section
+          ref={featuresAnimation.ref}
+          className={`container mx-auto px-4 sm:px-6 py-20 lg:py-28 transition-all duration-700 ${
+            featuresAnimation.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="text-center mb-14 max-w-2xl mx-auto space-y-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Features</span>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight font-poppins">
+              Everything you need to study effectively
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Designed to eliminate search overload and surface high-density educational content.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {[
+              {
+                icon: Sparkles,
+                title: "Multi-Source AI Curation",
+                desc: "Gemini 2.5 Flash evaluates topic relevance to recommend YouTube videos, podcasts, official docs, and courses.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Parallel URL Verification",
+                desc: "Automated HEAD & GET requests verify links in real-time, filtering out 404s and hallucinated URLs before you click.",
+              },
+              {
+                icon: Bookmark,
+                title: "Personal Library",
+                desc: "Bookmark your favorite resources with one click to build a structured, permanent knowledge base.",
+              },
+              {
+                icon: Sliders,
+                title: "Format Weighting & Preferences",
+                desc: "Tailor AI results to match your learning style — prioritize video tutorials, audio podcasts, or technical docs.",
+              },
+              {
+                icon: BarChart3,
+                title: "Activity & Search Analytics",
+                desc: "Track total searches, saved items, and viewed resources over time to stay motivated.",
+              },
+              {
+                icon: Lock,
+                title: "Seamless OAuth Security",
+                desc: "1-click authentication with Google & GitHub. HTTP-only secure cookies keep your session safe.",
+              },
+            ].map(({ icon: Icon, title, desc }, i) => (
+              <div
+                key={i}
+                className="bg-card border border-border/80 rounded-3xl p-7 hover:border-primary/40 hover:shadow-soft transition-all space-y-3"
+              >
+                <div className="w-11 h-11 rounded-2xl bg-accent flex items-center justify-center text-primary">
+                  <Icon className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-foreground font-poppins">{title}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ─── HOW IT WORKS ─── */}
+        <section
+          ref={howItWorksAnimation.ref}
+          className={`container mx-auto px-4 sm:px-6 py-20 border-t border-border/50 transition-all duration-700 ${
+            howItWorksAnimation.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="text-center mb-14 space-y-3 max-w-2xl mx-auto">
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">Workflow</span>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight font-poppins">
+              Three steps to curated knowledge
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {[
+              {
+                step: "01",
+                title: "Enter Topic",
+                desc: "Search any subject — from System Design and Quantum Physics to React and French Grammar.",
+              },
+              {
+                step: "02",
+                title: "AI Curation & Validation",
+                desc: "Gemini finds top resources while our backend verifies live URLs in parallel to guarantee reachability.",
+              },
+              {
+                step: "03",
+                title: "Learn & Save",
+                desc: "Explore ranked videos, podcasts, docs, and courses. Bookmark items to your personal library anytime.",
+              },
+            ].map(({ step, title, desc }) => (
+              <div key={step} className="bg-card border border-border/80 rounded-3xl p-7 space-y-3">
+                <span className="text-3xl font-extrabold text-primary/30 font-poppins">{step}</span>
+                <h3 className="text-lg font-bold text-foreground font-poppins">{title}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ─── CREATOR HIGHLIGHT SECTION ─── */}
+        <section className="container mx-auto px-4 sm:px-6 py-16 border-t border-border/50">
+          <div className="max-w-4xl mx-auto bg-card border border-border/80 rounded-3xl p-8 sm:p-12 shadow-xl relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
+              <div className="relative group shrink-0">
+                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-primary/30 to-primary/10 blur-sm group-hover:opacity-100 transition-opacity" />
+                <img
+                  src="/creator.jpg"
+                  alt="Ronit Mexson - Creator of LearnOpto"
+                  className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover border-2 border-primary/30 shadow-md"
+                />
+              </div>
+
+              <div className="space-y-3.5 text-center sm:text-left flex-1">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-semibold border border-primary/20">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" /> Meet the Creator
+                </span>
+
+                <h3 className="text-2xl sm:text-3xl font-bold tracking-tight font-poppins text-foreground">
+                  Ronit Mexson
+                </h3>
+
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  Passionate developer and lead architect behind LearnOpto. Built with a vision to eliminate learning search fatigue by curating high-density AI-verified content.
+                </p>
+
+                <div className="pt-2 flex flex-wrap justify-center sm:justify-start items-center gap-3">
+                  <a
+                    href="https://ronitmexson.netlify.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                  >
+                    <Globe className="w-4 h-4" />
+                    Visit Creator Portfolio
+                    <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                  </a>
+
+                  <Button
+                    onClick={() => navigateTo("/about")}
+                    variant="outline"
+                    className="rounded-xl border-border text-xs sm:text-sm font-medium"
+                  >
+                    Read Full Vision
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </footer>
-      </div>
+        </section>
+
+        {/* ─── CTA BANNER ─── */}
+        <section
+          ref={ctaAnimation.ref}
+          className={`container mx-auto px-4 sm:px-6 pb-24 transition-all duration-700 ${
+            ctaAnimation.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <div className="relative bg-card border border-border/80 rounded-3xl p-10 sm:p-16 text-center overflow-hidden shadow-xl max-w-4xl mx-auto">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-60 h-60 bg-primary/5 blur-[80px] rounded-full pointer-events-none" />
+
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-4 relative z-10 font-poppins">
+              Ready to learn smarter?
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-md mx-auto relative z-10">
+              Sign in with Google or GitHub and let AI find the best study resources for your exact goals.
+            </p>
+            <Button
+              onClick={() => navigateTo("/login")}
+              size="lg"
+              className="h-12 px-8 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 shadow-md rounded-xl transition-all relative z-10"
+            >
+              Sign In to Start Learning
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </section>
+      </main>
+
+      {/* ─── FOOTER ─── */}
+      <footer className="border-t border-border/40 bg-background py-8">
+        <div className="container mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
+            </div>
+            <span className="font-semibold text-foreground font-poppins">LearnOpto</span>
+          </div>
+
+          <p>© {new Date().getFullYear()} LearnOpto. All rights reserved.</p>
+
+          <div className="flex items-center gap-4">
+            <a href="/about" className="hover:text-foreground transition-colors">About Creator</a>
+            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
+            <a href="/terms" className="hover:text-foreground transition-colors">Terms of Use</a>
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              GitHub
+            </a>
+          </div>
+        </div>
+      </footer>
     </motion.div>
   );
-};
-
-export default Index;
+}

@@ -1,21 +1,32 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useRef } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SearchBar } from "@/components/SearchBar";
 import { ResourceCard } from "@/components/ResourceCard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ShieldCheck, Folder, Clock, Sparkles, Fingerprint } from "lucide-react";
-import { PasskeySetupModal } from "@/components/PasskeySetupModal";
-import { usePasskeys, useRemovePasskey } from "@/hooks/usePasskey";
+import { Clock, ShieldCheck, Trash2, BookmarkCheck, Sparkles, LogOut, Loader2, Plus } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { navigateTo } from "@/lib/navigation";
+
+type ResourceType = "youtube" | "podcast" | "documentation" | "course" | "video" | "article" | "audio" | "docs";
 
 interface Resource {
   id: string;
   title: string;
   description: string;
   url: string;
-  type: "youtube" | "podcast" | "documentation" | "course";
+  type: ResourceType;
+}
+
+interface SavedResource {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  source: string;
+  type: string;
+  createdAt: string;
 }
 
 interface SearchQuery {
@@ -25,7 +36,7 @@ interface SearchQuery {
   resources: Resource[];
 }
 
-// --- Animation Variants ---
+// Animation Variants
 const pageVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -35,7 +46,7 @@ const pageVariants: Variants = {
 };
 
 const headerVariants: Variants = {
-  hidden: { opacity: 0, y: -20 },
+  hidden: { opacity: 0, y: -10 },
   visible: {
     opacity: 1,
     y: 0,
@@ -44,7 +55,7 @@ const headerVariants: Variants = {
 };
 
 const sectionVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
@@ -53,7 +64,7 @@ const sectionVariants: Variants = {
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 20, scale: 0.97 },
+  hidden: { opacity: 0, y: 16, scale: 0.98 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
@@ -62,14 +73,14 @@ const cardVariants: Variants = {
       type: "spring",
       stiffness: 220,
       damping: 22,
-      delay: i * 0.07,
+      delay: i * 0.05,
     },
   }),
-  exit: { opacity: 0, y: -10, scale: 0.97, transition: { duration: 0.2 } },
+  exit: { opacity: 0, y: -10, scale: 0.98, transition: { duration: 0.15 } },
 };
 
 const sidebarItemVariants: Variants = {
-  hidden: { opacity: 0, x: 20 },
+  hidden: { opacity: 0, x: 16 },
   visible: (i: number) => ({
     opacity: 1,
     x: 0,
@@ -77,28 +88,59 @@ const sidebarItemVariants: Variants = {
       type: "spring",
       stiffness: 200,
       damping: 22,
-      delay: 0.3 + i * 0.08,
+      delay: 0.2 + i * 0.06,
     },
   }),
 };
 
-const TYPE_STYLES: Record<string, { label: string; accent: string; bg: string; text: string }> = {
-  youtube:       { label: "YouTube",       accent: "#ef4444", bg: "rgba(239,68,68,0.08)",   text: "#f87171" },
-  podcast:       { label: "Podcast",       accent: "#8b5cf6", bg: "rgba(139,92,246,0.08)", text: "#a78bfa" },
-  documentation: { label: "Docs",          accent: "#00ff88", bg: "rgba(0,255,136,0.08)",   text: "#00ff88" },
-  course:        { label: "Course",        accent: "#f59e0b", bg: "rgba(245,158,11,0.08)",  text: "#fbbf24" },
+const getApiErrorMessage = async (res: Response, fallback: string) => {
+  const data = await res.json().catch(() => null);
+  if (data?.error === "Daily search quota reached" && data.resetAt) {
+    return `Daily search quota reached. Try again after ${new Date(data.resetAt).toLocaleString()}.`;
+  }
+  return data?.error || fallback;
+};
+
+const resourceTypes = new Set<ResourceType>([
+  "youtube",
+  "podcast",
+  "documentation",
+  "course",
+  "video",
+  "article",
+  "audio",
+  "docs",
+]);
+
+const normalizeResourceType = (type: string): ResourceType => {
+  return resourceTypes.has(type as ResourceType) ? (type as ResourceType) : "documentation";
 };
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   const [activeFeedId, setActiveFeedId] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<Resource[] | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"results" | "saved">("results");
 
-  const { data: passkeys } = usePasskeys();
-  const { mutate: removePasskey } = useRemovePasskey();
+  // Auth Check - verify session
+  const { data: userProfile } = useQuery({
+    queryKey: ["me"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:3000/api/auth/me", {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        navigateTo("/login");
+        throw new Error("Unauthorized");
+      }
+      return res.json();
+    },
+    retry: false,
+  });
 
   // Fetch History
   const { data: historyData, isLoading: isLoadingHistory } = useQuery<{ history: SearchQuery[] }>({
@@ -108,38 +150,130 @@ export default function Dashboard() {
         credentials: "include",
       });
       if (res.status === 401) {
-        navigate("/login");
+        navigateTo("/login");
         throw new Error("Unauthorized");
       }
       if (!res.ok) throw new Error("Failed to fetch history");
       return res.json();
     },
+    enabled: !!userProfile,
   });
 
   const history = historyData?.history || [];
 
-  // Determine what resources to show in the feed
-  let displayResources: Resource[] = [];
-  if (searchResults) {
-    displayResources = searchResults;
-  } else if (activeFeedId) {
-    const activeQuery = history.find((q) => q.id === activeFeedId);
-    if (activeQuery) displayResources = activeQuery.resources;
-  } else if (history.length > 0) {
-    displayResources = history[0].resources;
-  }
+  // Fetch Saved Resources
+  const { data: savedResourcesData } = useQuery<{ resources: SavedResource[] }>({
+    queryKey: ["savedResources"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:3000/api/resources/saved", {
+        credentials: "include",
+      });
+      if (res.status === 401) {
+        navigateTo("/login");
+        throw new Error("Unauthorized");
+      }
+      if (!res.ok) throw new Error("Failed to fetch saved resources");
+      return res.json();
+    },
+    enabled: !!userProfile,
+  });
 
-  // Filter resources by type
-  const filteredResources =
-    activeFilter === "all"
-      ? displayResources
-      : displayResources.filter((r) => {
-          if (activeFilter === "video") return r.type === "youtube";
-          if (activeFilter === "audio") return r.type === "podcast";
-          if (activeFilter === "docs") return r.type === "documentation";
-          if (activeFilter === "course") return r.type === "course";
-          return true;
+  const savedMap = new Map<string, string>();
+  (savedResourcesData?.resources || []).forEach((r) => {
+    savedMap.set(r.url, r.id);
+  });
+
+  // Toggle Save Mutation
+  const toggleSaveMutation = useMutation({
+    mutationFn: async (data: {
+      title: string;
+      description: string;
+      url: string;
+      source: string;
+      type: string;
+      isSaved?: boolean;
+      savedId?: string;
+    }) => {
+      if (data.isSaved && data.savedId) {
+        const res = await fetch(`http://localhost:3000/api/resources/save/${data.savedId}`, {
+          method: "DELETE",
+          credentials: "include",
         });
+        if (!res.ok) throw new Error(await getApiErrorMessage(res, "Failed to remove saved resource"));
+        return res.json();
+      } else {
+        const res = await fetch("http://localhost:3000/api/resources/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            title: data.title,
+            description: data.description,
+            url: data.url,
+            source: data.source,
+            type: data.type,
+          }),
+        });
+        if (!res.ok) throw new Error(await getApiErrorMessage(res, "Failed to save resource"));
+        return res.json();
+      }
+    },
+    onSuccess: (_resData, variables) => {
+      toast({
+        title: variables.isSaved ? "Removed from Saved" : "Resource Saved",
+        description: variables.isSaved
+          ? "Resource removed from your saved library."
+          : "Resource added to your saved library.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["savedResources"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Action failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Fetch User Analytics
+  const { data: analyticsData } = useQuery<{ analytics: { totalSearches: number; totalResourcesSaved: number; totalResourcesViewed: number } }>({
+    queryKey: ["userAnalytics"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:3000/api/user/analytics", { credentials: "include" });
+      if (!res.ok) return { analytics: { totalSearches: 0, totalResourcesSaved: 0, totalResourcesViewed: 0 } };
+      return res.json();
+    },
+    enabled: !!userProfile,
+  });
+
+  // Fetch User Format Preferences
+  const { data: preferencesData } = useQuery<{ preferences: { preferredSources: string[] } }>({
+    queryKey: ["userPreferences"],
+    queryFn: async () => {
+      const res = await fetch("http://localhost:3000/api/user/preferences", { credentials: "include" });
+      if (!res.ok) return { preferences: { preferredSources: ["video", "podcast", "documentation", "course"] } };
+      return res.json();
+    },
+    enabled: !!userProfile,
+  });
+
+  const updatePreferencesMutation = useMutation({
+    mutationFn: async (preferredSources: string[]) => {
+      const res = await fetch("http://localhost:3000/api/user/preferences", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ preferredSources }),
+      });
+      if (!res.ok) throw new Error("Failed to update preferences");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["userPreferences"] });
+      toast({ title: "Preferences Updated", description: "Search format weighting updated for future searches." });
+    },
+  });
 
   // Search Mutation
   const searchMutation = useMutation({
@@ -151,16 +285,18 @@ export default function Dashboard() {
         body: JSON.stringify({ topic }),
       });
       if (res.status === 401) {
-        navigate("/login");
+        navigateTo("/login");
         throw new Error("Unauthorized");
       }
-      if (!res.ok) throw new Error("Search failed");
+      if (!res.ok) throw new Error(await getApiErrorMessage(res, "Search failed"));
       return res.json();
     },
     onSuccess: (data) => {
       setSearchResults(data.resources);
       setActiveFeedId(null);
+      setViewMode("results");
       queryClient.invalidateQueries({ queryKey: ["searchHistory"] });
+      queryClient.invalidateQueries({ queryKey: ["userAnalytics"] });
     },
     onError: (error) => {
       toast({
@@ -171,8 +307,78 @@ export default function Dashboard() {
     },
   });
 
+  // Delete History Item Mutation
+  const deleteHistoryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`http://localhost:3000/api/search/history/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.status === 401) {
+        navigateTo("/login");
+        throw new Error("Unauthorized");
+      }
+      if (!res.ok) throw new Error(await getApiErrorMessage(res, "Failed to delete history item"));
+      return res.json();
+    },
+    onMutate: async (deletedId: string) => {
+      await queryClient.cancelQueries({ queryKey: ["searchHistory"] });
+      const previousHistory = queryClient.getQueryData<{ history: SearchQuery[] }>(["searchHistory"]);
+
+      queryClient.setQueryData<{ history: SearchQuery[] }>(["searchHistory"], (old) => {
+        if (!old) return { history: [] };
+        return {
+          ...old,
+          history: old.history.filter((item) => item.id !== deletedId),
+        };
+      });
+
+      if (activeFeedId === deletedId) {
+        setActiveFeedId(null);
+        setSearchResults(null);
+      }
+
+      return { previousHistory };
+    },
+    onError: (error, _deletedId, context) => {
+      if (context?.previousHistory) {
+        queryClient.setQueryData(["searchHistory"], context.previousHistory);
+      }
+      toast({
+        title: "Delete failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["searchHistory"] });
+    },
+  });
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:3000/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      queryClient.clear();
+      navigateTo("/login");
+    } catch {
+      navigateTo("/login");
+    }
+  };
+
   const handleSearch = (topic: string) => {
     searchMutation.mutate(topic);
+  };
+
+  const handleCreateNewEntry = () => {
+    setSearchResults(null);
+    setActiveFeedId(null);
+    setViewMode("results");
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 50);
   };
 
   const formatDate = (dateString: string) => {
@@ -186,159 +392,155 @@ export default function Dashboard() {
   };
 
   const FILTERS = [
-    { key: "all",    label: "All" },
-    { key: "video",  label: "Video" },
-    { key: "audio",  label: "Audio" },
-    { key: "docs",   label: "Docs" },
+    { key: "all", label: "All" },
+    { key: "video", label: "Video" },
+    { key: "audio", label: "Audio" },
+    { key: "docs", label: "Docs" },
     { key: "course", label: "Course" },
   ];
+
+  // Determine resources to show in feed
+  let rawResources: Resource[] = [];
+  if (viewMode === "saved") {
+    rawResources = (savedResourcesData?.resources || []).map((r) => ({
+      id: r.id,
+      title: r.title,
+      description: r.description || "",
+      url: r.url,
+      type: normalizeResourceType(r.type),
+      source: r.source,
+    }));
+  } else {
+    if (searchResults) {
+      rawResources = searchResults;
+    } else if (activeFeedId) {
+      const activeQuery = history.find((q) => q.id === activeFeedId);
+      if (activeQuery) rawResources = activeQuery.resources;
+    } else if (history.length > 0) {
+      rawResources = history[0].resources;
+    }
+  }
+
+  // Filter resources by type
+  const filteredResources =
+    activeFilter === "all"
+      ? rawResources
+      : rawResources.filter((r) => {
+          if (activeFilter === "video") return r.type === "youtube";
+          if (activeFilter === "audio") return r.type === "podcast";
+          if (activeFilter === "docs") return r.type === "documentation";
+          if (activeFilter === "course") return r.type === "course";
+          return true;
+        });
 
   return (
     <motion.div
       variants={pageVariants}
       initial="hidden"
       animate="visible"
-      className="min-h-screen font-inter overflow-x-hidden bg-background text-foreground"
+      className="min-h-[100dvh] font-inter bg-background text-foreground flex flex-col"
     >
-      {/* ── Top Nav ─────────────────────────────────────────────── */}
+
+      {/* Top Header */}
       <motion.header
         variants={headerVariants}
-        className="border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-8 h-16"
+        className="border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-40 px-6 h-16 flex items-center justify-between"
       >
-        {/* Logo only */}
-        <a
-          href="/"
-          style={{
-            fontSize: "18px",
-            fontWeight: 700,
-          }}
-        >
-          <span className="text-foreground">Learn</span><span className="text-primary">Opto</span>
+        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <span className="text-lg font-semibold tracking-tight font-poppins">LearnOpto</span>
         </a>
 
-        <ThemeToggle />
+        <div className="flex items-center gap-4">
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-muted-foreground">
+            <a href="/about" className="hover:text-foreground transition-colors">About Creator</a>
+            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
+            <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
+          </nav>
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="text-xs font-medium text-muted-foreground hover:text-foreground gap-1.5"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Log out
+          </Button>
+        </div>
       </motion.header>
 
-      {/* ── Main layout ──────────────────────────────────────────── */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "4rem", paddingBottom: "2rem", paddingLeft: "1rem", paddingRight: "1rem" }}>
-        {/* Hero */}
-        <motion.div variants={sectionVariants} style={{ marginBottom: "2.5rem", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <p
-            style={{
-              fontFamily: "monospace",
-              fontSize: "12px",
-              letterSpacing: "0.18em",
-              color: "hsl(var(--primary))",
-              marginBottom: "1.5rem",
-              background: "hsl(var(--primary) / 0.1)",
-              padding: "6px 14px",
-              border: "1px solid hsl(var(--primary) / 0.2)",
-              borderRadius: "9999px",
-              fontWeight: "bold",
-            }}
-          >
-            [ COMMAND CENTER / 001 ]
-          </p>
-          <h1
-            style={{
-              fontSize: "clamp(32px,5vw,56px)",
-              fontWeight: 900,
-              lineHeight: 1.1,
-              letterSpacing: "-0.03em",
-              maxWidth: "800px",
-              marginBottom: "1rem",
-            }}
-            className="text-foreground"
-          >
-            Discover high-fidelity resources <br />
-            <span className="text-muted-foreground">
-              for your optimization flow.
-            </span>
+      {/* Hero / Search Section */}
+      <div className="flex flex-col items-center pt-10 pb-8 px-4 text-center">
+        <motion.div variants={sectionVariants} className="mb-6 flex flex-col items-center max-w-2xl">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium border border-primary/20 mb-4">
+            <Sparkles className="w-3.5 h-3.5 text-primary" /> AI-Powered Resource Curation
+          </span>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight font-poppins mb-3">
+            Discover top learning resources
           </h1>
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            Type any topic to generate hand-picked YouTube videos, podcasts, documentation, and courses.
+          </p>
         </motion.div>
 
-        {/* Search */}
-        <motion.div variants={sectionVariants} style={{ marginBottom: "1.5rem", width: "100%", maxWidth: "800px" }}>
-          <SearchBar onSearch={handleSearch} isLoading={searchMutation.isPending} />
+        <motion.div variants={sectionVariants} className="w-full max-w-2xl mb-2">
+          <SearchBar ref={searchInputRef} onSearch={handleSearch} isLoading={searchMutation.isPending} />
         </motion.div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 300px",
-          minHeight: "calc(100vh - 56px)",
-          maxWidth: "1400px",
-          margin: "0 auto",
-        }}
-        className="border-t border-border"
-      >
-        {/* ── Left column ──────────────────────────────────────── */}
-        <div
-          style={{ padding: "2.5rem 2rem" }}
-          className="border-r border-border"
-        >
+      {/* Main Grid Layout (Responsive Flex/Grid: stacked on mobile, 2 columns on desktop) */}
+      <div className="flex-1 border-t border-border max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px]">
+        {/* Left Feed Panel */}
+        <div className="p-6 sm:p-8 lg:border-r border-border">
+          {/* Feed Header / View Mode Controls */}
+          <motion.div variants={sectionVariants} className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                {/* Mode toggle */}
+                <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/80">
+                  <button
+                    onClick={() => setViewMode("results")}
+                    className={`px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-lg text-xs font-medium transition-all ${
+                      viewMode === "results"
+                        ? "bg-card text-foreground shadow-sm font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Results
+                  </button>
+                  <button
+                    onClick={() => setViewMode("saved")}
+                    className={`px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
+                      viewMode === "saved"
+                        ? "bg-card text-foreground shadow-sm font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <BookmarkCheck className="w-3.5 h-3.5 text-primary" />
+                    Saved ({savedResourcesData?.resources?.length || 0})
+                  </button>
+                </div>
 
-          {/* Feed header */}
-          <motion.div variants={sectionVariants}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingBottom: "1rem",
-                marginBottom: "2rem",
-              }}
-              className="border-b border-border"
-            >
-              <span
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: "10px",
-                  letterSpacing: "0.14em",
-                  color: "hsl(var(--primary))",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: "hsl(var(--primary) / 0.1)",
-                  padding: "4px 8px",
-                  border: "1px solid hsl(var(--primary) / 0.2)",
-                  borderRadius: "4px",
-                  fontWeight: "bold",
-                }}
-              >
-                <span
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: "hsl(var(--primary))",
-                    display: "inline-block",
-                    animation: "pulse 2s ease-in-out infinite",
-                  }}
-                />
-                CURATED_FEED.LOG
-              </span>
+                <span className="hidden sm:flex text-xs font-medium text-muted-foreground items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  {viewMode === "saved" ? "Saved Library" : "Learning Feed"}
+                </span>
+              </div>
 
               {/* Filters */}
-              <div style={{ display: "flex", gap: "6px" }}>
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 touch-pan-x">
                 {FILTERS.map((f) => (
                   <button
                     key={f.key}
                     onClick={() => setActiveFilter(f.key)}
-                    style={{
-                      fontFamily: "monospace",
-                      fontSize: "10px",
-                      letterSpacing: "0.08em",
-                      padding: "4px 12px",
-                      border: `1px solid ${activeFilter === f.key ? "hsl(var(--primary))" : "transparent"}`,
-                      color: activeFilter === f.key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
-                      background: activeFilter === f.key ? "hsl(var(--primary) / 0.1)" : "transparent",
-                      cursor: "pointer",
-                      borderRadius: "6px",
-                      transition: "all 0.15s",
-                      fontWeight: "bold",
-                    }}
+                    className={`px-3.5 py-2 min-h-[40px] sm:min-h-[44px] rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                      activeFilter === f.key
+                        ? "bg-primary/10 text-primary border border-primary/20 font-semibold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
                   >
                     {f.label}
                   </button>
@@ -346,41 +548,21 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Cards */}
+            {/* Loading / Grid / Empty State */}
             {searchMutation.isPending ? (
-              <div
-                style={{
-                  padding: "5rem",
-                  textAlign: "center",
-                  fontFamily: "monospace",
-                  fontSize: "12px",
-                  color: "hsl(var(--primary))",
-                  letterSpacing: "0.12em",
-                  border: "1px dashed hsl(var(--primary) / 0.5)",
-                  borderRadius: "12px",
-                  background: "hsl(var(--primary) / 0.1)",
-                  fontWeight: "bold"
-                }}
-              >
-                <motion.span
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
-                >
-                  INITIALIZING SEARCH SEQUENCE...
-                </motion.span>
+              <div className="p-12 text-center border border-dashed border-border rounded-2xl bg-card">
+                <Loader2 className="w-7 h-7 text-primary animate-spin mx-auto mb-3" />
+                <p className="text-sm font-medium text-foreground">Searching for top learning resources...</p>
+                <p className="text-xs text-muted-foreground mt-1">Curating YouTube videos, podcasts, docs, and courses</p>
               </div>
             ) : filteredResources.length > 0 ? (
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={activeFilter + (activeFeedId ?? "new")}
+                  key={activeFilter + viewMode + (activeFeedId ?? "new")}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-                    gap: "12px",
-                  }}
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-4"
                 >
                   {filteredResources.map((resource, i) => (
                     <motion.div
@@ -390,291 +572,202 @@ export default function Dashboard() {
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                      whileHover={{ y: -3, transition: { duration: 0.18 } }}
-                      style={{
-                        overflow: "hidden",
-                        position: "relative",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      className="bg-card border border-border rounded-xl hover:border-primary/50"
-                      onHoverStart={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                      }}
-                      onHoverEnd={(e) => {
-                        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                      }}
                     >
-                      {/* Type accent bar */}
-                      <div
-                        style={{
-                          height: "2px",
-                          background: TYPE_STYLES[resource.type]?.accent ?? "#fff",
-                        }}
+                      <ResourceCard
+                        {...resource}
+                        index={i}
+                        isSaved={savedMap.has(resource.url)}
+                        savedId={savedMap.get(resource.url)}
+                        onToggleSave={(data) => toggleSaveMutation.mutate(data)}
                       />
-                      <div style={{ padding: "1.1rem 1.25rem" }}>
-                        {/* Badge */}
-                        <span
-                          style={{
-                            display: "inline-block",
-                            fontFamily: "monospace",
-                            padding: "4px 10px",
-                            borderRadius: "4px",
-                            fontSize: "10px",
-                            fontWeight: "bold",
-                            letterSpacing: "0.05em",
-                            marginBottom: "0.7rem",
-                          }}
-                          className="bg-card border border-border text-foreground"
-                        >
-                          {TYPE_STYLES[resource.type]?.label ?? resource.type.toUpperCase()}
-                        </span>
-
-                        <ResourceCard {...resource} index={i} />
-                      </div>
                     </motion.div>
                   ))}
                 </motion.div>
               </AnimatePresence>
             ) : (
-              <div
-                style={{
-                  padding: "5rem",
-                  textAlign: "center",
-                  fontFamily: "monospace",
-                  fontSize: "12px",
-                  color: "hsl(var(--muted-foreground))",
-                  letterSpacing: "0.1em",
-                  border: "1px dashed hsl(var(--border))",
-                  borderRadius: "12px",
-                  background: "transparent",
-                  fontWeight: "bold"
-                }}
-              >
-                {activeFilter === "all" ? "AWAITING QUERY INPUT" : `NO ${activeFilter.toUpperCase()} RESOURCES FOUND`}
+              <div className="p-12 text-center border border-dashed border-border rounded-2xl bg-card">
+                <p className="text-sm font-medium text-muted-foreground">
+                  {viewMode === "saved"
+                    ? (savedResourcesData?.resources?.length || 0) === 0
+                      ? "Nothing saved yet — click the bookmark icon on any resource to save it here."
+                      : `No ${activeFilter} saved resources found.`
+                    : activeFilter === "all"
+                    ? "Enter a topic above to generate a curated learning feed."
+                    : `No ${activeFilter} resources found.`}
+                </p>
               </div>
             )}
           </motion.div>
         </div>
 
-        {/* ── Right sidebar ─────────────────────────────────────── */}
-        <div
-          style={{
-            padding: "2rem 1.5rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "1.75rem",
-          }}
-        >
-          {/* Recent Activity */}
+        {/* Right Sidebar Column */}
+        <div className="p-6 sm:p-8 flex flex-col gap-6 bg-muted/20">
+          {/* Create New Entry Button */}
           <motion.div custom={0} variants={sidebarItemVariants} initial="hidden" animate="visible">
-            <p
-              style={{
-                fontFamily: "monospace",
-                fontSize: "9px",
-                letterSpacing: "0.16em",
-                color: "rgba(255,255,255,0.25)",
-                marginBottom: "1rem",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-              }}
+            <Button
+              onClick={handleCreateNewEntry}
+              className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-medium text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-all"
             >
-              <Clock size={10} style={{ color: "#00ff88" }} />
-              RECENT_ACTIVITY.LOG
-            </p>
+              <Plus className="w-4 h-4" />
+              Create New Entry
+            </Button>
+          </motion.div>
 
-            <div style={{ display: "flex", flexDirection: "column" }}>
+          {/* Search History */}
+          <motion.div custom={1} variants={sidebarItemVariants} initial="hidden" animate="visible">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 font-poppins">
+              <Clock className="w-3.5 h-3.5 text-primary" /> Search History
+            </h3>
+
+            <div className="flex flex-col gap-2">
               {isLoadingHistory ? (
-                <p className="font-mono text-[11px] font-bold text-muted-foreground">
-                  Loading...
-                </p>
+                <p className="text-xs text-muted-foreground">Loading history...</p>
               ) : history.length > 0 ? (
-                history.slice(0, 5).map((query, i) => (
+                history.map((query, i) => (
                   <motion.div
                     key={query.id}
                     initial={{ opacity: 0, x: 12 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.4 + i * 0.07, type: "spring", stiffness: 200, damping: 22 }}
+                    transition={{ delay: 0.05 + i * 0.03 }}
                     onClick={() => {
                       setSearchResults(null);
                       setActiveFeedId(query.id);
+                      setViewMode("results");
                     }}
-                    style={{
-                      padding: "0.8rem",
-                      marginBottom: "0.5rem",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                    }}
-                    className="bg-card border border-border hover:border-primary/50 transition-colors"
+                    className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-start group ${
+                      activeFeedId === query.id || (!activeFeedId && !searchResults && i === 0 && viewMode === "results")
+                        ? "bg-card border-primary shadow-sm"
+                        : "bg-card/60 border-border hover:border-primary/50 hover:bg-card"
+                    }`}
                   >
-                    <p className="font-mono text-[10px] text-primary mb-1 tracking-[0.06em] font-bold">
-                      {formatDate(query.createdAt)}
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed font-bold">
-                      Curriculum for{" "}
-                      <span className="text-foreground">'{query.query}'</span>
-                    </p>
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="text-xs font-medium text-foreground truncate">
+                        {query.query}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {formatDate(query.createdAt)} · {query.resources?.length || 0} items
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteHistoryMutation.mutate(query.id);
+                      }}
+                      title="Delete search entry"
+                      className="text-muted-foreground hover:text-destructive transition-colors min-w-[44px] min-h-[44px] p-2 flex items-center justify-center rounded-xl hover:bg-destructive/10 shrink-0 -mr-1"
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive/70 group-hover:text-destructive" />
+                    </button>
                   </motion.div>
                 ))
               ) : (
-                <p className="font-mono text-[11px] font-bold text-muted-foreground">
-                  No recent activity
-                </p>
+                <p className="text-xs text-muted-foreground">No recent search history</p>
               )}
             </div>
           </motion.div>
 
-          {/* Divider */}
-          <div className="h-[1px] bg-border my-6" />
+          {/* User Analytics Summary */}
+          <motion.div custom={2} variants={sidebarItemVariants} initial="hidden" animate="visible">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 font-poppins">
+              <Sparkles className="w-3.5 h-3.5 text-primary" /> Your Activity Analytics
+            </h3>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-card border border-border p-2.5 rounded-xl">
+                <span className="text-lg font-bold text-foreground block font-poppins">
+                  {analyticsData?.analytics?.totalSearches || 0}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-medium">Searches</span>
+              </div>
+              <div className="bg-card border border-border p-2.5 rounded-xl">
+                <span className="text-lg font-bold text-foreground block font-poppins">
+                  {analyticsData?.analytics?.totalResourcesSaved || 0}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-medium">Saved</span>
+              </div>
+              <div className="bg-card border border-border p-2.5 rounded-xl">
+                <span className="text-lg font-bold text-foreground block font-poppins">
+                  {analyticsData?.analytics?.totalResourcesViewed || 0}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-medium">Viewed</span>
+              </div>
+            </div>
+          </motion.div>
 
-          {/* Saved Curriculums */}
-          <motion.div custom={1} variants={sidebarItemVariants} initial="hidden" animate="visible">
-            <p
-              className="font-mono text-[11px] tracking-[0.16em] text-foreground font-bold mb-4 flex items-center gap-2"
-            >
-              <Sparkles size={10} className="text-primary" />
-              SAVED_CURRICULUMS
+          {/* Format Preferences Selector */}
+          <motion.div custom={3} variants={sidebarItemVariants} initial="hidden" animate="visible">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2 font-poppins">
+              <Sparkles className="w-3.5 h-3.5 text-primary" /> Format Preferences
+            </h3>
+            <p className="text-[11px] text-muted-foreground mb-3">
+              Weight resource types during AI curation:
             </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div className="flex flex-wrap gap-2">
               {[
-                { id: "OPT-001", title: "Deep Learning Core", pct: 75 },
-                { id: "OPT-042", title: "Systems Design Elite", pct: 12 },
-              ].map((curr) => (
-                <motion.div
-                  key={curr.id}
-                  style={{
-                      padding: "1rem",
-                      cursor: "pointer",
-                  }}
-                  className="bg-card border border-border rounded-xl hover:border-primary/50 transition-colors"
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-mono text-[10px] text-muted-foreground font-bold">
-                      {curr.id}
-                    </span>
-                    <Folder size={14} className="text-foreground" />
-                  </div>
-                  <p className="text-sm font-bold mb-3 text-foreground">{curr.title}</p>
-                  <div className="bg-background h-1 rounded-sm overflow-hidden border border-border">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${curr.pct}%` }}
-                      transition={{ delay: 1, duration: 1.1, ease: "easeOut" }}
-                      className="h-full bg-primary rounded-sm"
-                    />
-                  </div>
-                  <p className="text-right font-mono text-[10px] text-primary mt-2 font-bold">
-                    {curr.pct}%
-                  </p>
-                </motion.div>
-              ))}
+                { id: "video", label: "Videos" },
+                { id: "podcast", label: "Podcasts" },
+                { id: "documentation", label: "Docs" },
+                { id: "course", label: "Courses" },
+              ].map((fmt) => {
+                const currentPrefs = preferencesData?.preferences?.preferredSources || ["video", "podcast", "documentation", "course"];
+                const isSelected = currentPrefs.includes(fmt.id);
 
-              <motion.button
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  cursor: "pointer",
-                  marginTop: "8px",
-                  transition: "all 0.1s"
-                }}
-                className="border border-dashed border-border bg-transparent text-muted-foreground hover:border-primary/50 hover:text-primary font-mono text-xs tracking-[0.1em] rounded-lg font-bold"
-              >
-                + CREATE NEW ENTRY
-              </motion.button>
+                const toggleFormat = () => {
+                  let updated = isSelected
+                    ? currentPrefs.filter((p) => p !== fmt.id)
+                    : [...currentPrefs, fmt.id];
+                  if (updated.length === 0) updated = ["video", "podcast", "documentation", "course"];
+                  updatePreferencesMutation.mutate(updated);
+                };
+
+                return (
+                  <button
+                    key={fmt.id}
+                    onClick={toggleFormat}
+                    className={`px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium transition-all ${
+                      isSelected
+                        ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                        : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {fmt.label}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
 
-          {/* Divider */}
-          <div className="h-[1px] bg-border my-6" />
+          {/* Account & Session Security */}
+          <motion.div custom={4} variants={sidebarItemVariants} initial="hidden" animate="visible">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 font-poppins">
+              <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Session Security
+            </h3>
 
-          {/* System Integrity */}
-          <motion.div
-            custom={2}
-            variants={sidebarItemVariants}
-            initial="hidden"
-            animate="visible"
-            style={{
-              padding: "1rem",
-            }}
-            className="bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-3"
-          >
-            <ShieldCheck size={18} className="text-primary mt-[1px] shrink-0" />
-            <div>
-              <p className="text-xs font-bold text-foreground mb-1">
-                System integrity: optimal
-              </p>
-              <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
-                All nodes operational · 14ms · Encrypted
-              </p>
+            <div className="bg-card border border-border p-3.5 rounded-xl space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Auth Provider:</span>
+                <span className="font-semibold text-foreground uppercase text-[11px] bg-accent px-2 py-0.5 rounded-md">OAuth 2.0</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Session Token:</span>
+                <span className="font-mono text-[11px] text-primary">HTTP-Only Cookie</span>
+              </div>
             </div>
-          </motion.div>
-
-          {/* Security (Passkeys) */}
-          <motion.div custom={3} variants={sidebarItemVariants} initial="hidden" animate="visible" className="mt-2">
-             <p className="font-mono text-[11px] tracking-[0.16em] text-foreground font-bold mb-4 flex items-center gap-2">
-               <Fingerprint size={10} className="text-primary" />
-               SECURITY_DEVICES
-             </p>
-             <div className="flex flex-col gap-2">
-               {passkeys && passkeys.length > 0 ? (
-                 passkeys.map((pk: any) => (
-                   <div key={pk.id} className="bg-card border border-border p-3 rounded-lg flex justify-between items-center hover:border-primary/30 transition-colors">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-mono font-bold text-foreground">{pk.deviceType}</span>
-                        <span className="text-[10px] font-mono text-muted-foreground mt-1">Added {new Date(pk.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <button onClick={() => removePasskey(pk.id)} className="text-red-500 hover:text-red-400 text-[10px] font-mono border border-red-500/20 px-2 py-1 rounded">Remove</button>
-                   </div>
-                 ))
-               ) : (
-                 <p className="font-mono text-[10px] text-muted-foreground border border-dashed border-border p-3 rounded-lg text-center">No passkeys registered</p>
-               )}
-             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* ── Footer ───────────────────────────────────────────────── */}
-      <motion.footer
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 0.6 }}
-        style={{
-          padding: "1.5rem 2rem",
-        }}
-        className="border-t border-border bg-background flex justify-between items-center flex-wrap gap-4"
-      >
-        <div>
-          <p className="text-sm font-bold tracking-tight mb-1 text-foreground">
-            Learn<span className="text-primary">Opto</span>
-          </p>
-          <p className="font-mono text-[9px] tracking-widest text-muted-foreground">
-            © 2024 LearnOpto Core. All rights reserved.
-          </p>
+      {/* Footer */}
+      <footer className="w-full py-4 px-6 border-t border-border/40 bg-background mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-muted-foreground">
+          <p>© {new Date().getFullYear()} LearnOpto. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <a href="/about" className="hover:text-foreground transition-colors">About Creator</a>
+            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
+            <a href="/terms" className="hover:text-foreground transition-colors">Terms of Service</a>
+          </div>
         </div>
-        <div style={{ display: "flex", gap: "1.5rem" }}>
-          {["Privacy", "Terms", "Status", "Security"].map((link) => (
-            <a
-              key={link}
-              href="#"
-              className="font-mono text-[9px] tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {link.toUpperCase()}
-            </a>
-          ))}
-        </div>
-      </motion.footer>
-
-      <PasskeySetupModal />
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.25; }
-        }
-      `}</style>
+      </footer>
     </motion.div>
   );
 }

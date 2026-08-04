@@ -4,6 +4,10 @@ import { useRegisterPasskey } from "@/hooks/usePasskey";
 import { useToast } from "@/hooks/use-toast";
 import { ShieldCheck, X, Fingerprint, Loader2 } from "lucide-react";
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+  return error instanceof Error ? error.message : fallback;
+};
+
 export function PasskeySetupModal() {
   const [isOpen, setIsOpen] = useState(false);
   const { mutateAsync: registerPasskey, isPending } = useRegisterPasskey();
@@ -34,10 +38,10 @@ export function PasskeySetupModal() {
       localStorage.setItem("passkeyPromptDismissed", "true"); // Prevent showing again
       setIsOpen(false);
       // You could also optionally trigger a query invalidation if the dashboard lists passkeys
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Setup Failed",
-        description: error.message || "Could not register your passkey.",
+        description: getErrorMessage(error, "Could not register your passkey."),
         variant: "destructive",
       });
     }

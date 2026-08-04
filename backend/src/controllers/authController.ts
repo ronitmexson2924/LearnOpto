@@ -1,41 +1,90 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../lib/prisma";
 import crypto from "crypto";
+import { appConfig, authConfig } from "../config/security";
+import { clearAuthCookie, setAuthCookie, signAuthToken } from "../utils/authSession";
+import { schemas, sendValidationError, validateBody, validateEmptyBody } from "../utils/requestValidation";
+import { TemporaryStore } from "../utils/temporaryStore";
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
-const GOOGLE_REDIRECT_URI = "http://localhost:3000/api/auth/google/callback";
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:8080";
+const oauthStateStore = new TemporaryStore<{ provider: "google" | "github" }>();
 
-const setAuthCookie = (res: Response, token: string) => {
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax", // 'strict' might break OAuth redirects depending on the browser, 'lax' is safer for top-level navigation
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+type RegisterRequest = {
+  email: string;
+  password: string;
+};
+
+type LoginRequest = RegisterRequest;
+
+const createOAuthState = (provider: "google" | "github"): string => {
+  const state = `${provider}.${crypto.randomBytes(32).toString("hex")}`;
+  oauthStateStore.set(state, { provider }, authConfig.oauthStateTtlMs);
+  return state;
+};
+
+const setOAuthStateCookie = (res: Response, state: string): void => {
+  res.cookie("oauth_state", state, {
+    ...authConfig.cookieOptions,
+    maxAge: authConfig.oauthStateTtlMs,
   });
+};
+
+const clearOAuthStateCookie = (res: Response): void => {
+  res.clearCookie("oauth_state", authConfig.cookieOptions);
+};
+
+const consumeOAuthState = (
+  queryState: unknown,
+  cookieState: unknown,
+  provider: "google" | "github"
+): boolean => {
+  if (typeof queryState !== "string" || typeof cookieState !== "string") {
+    return false;
+  }
+  if (queryState !== cookieState) {
+    return false;
+  }
+
+  const stored = oauthStateStore.consume(queryState);
+  return stored?.provider === provider;
+};
+
+const redirectToLogin = (res: Response, error: string): void => {
+  res.redirect(`${appConfig.frontendUrl}/login?error=${encodeURIComponent(error)}`);
+};
+
+const trackFailedLogin = async (userId?: string): Promise<void> => {
+  if (!userId) return;
+
+  await prisma.user
+    .update({
+      where: { id: userId },
+      data: {
+        failedLoginCount: { increment: 1 },
+        lastFailedLoginAt: new Date(),
+      },
+    })
+    .catch((error) => console.error("Failed login tracking error:", error));
 };
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ error: "Email and password are required" });
+    const validation = validateBody<RegisterRequest>(req.body, schemas.register);
+    if (!validation.ok) {
+      sendValidationError(res, validation.errors);
       return;
     }
 
+    const { email, password } = validation.value;
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       res.status(400).json({ error: "User already exists" });
       return;
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, authConfig.bcryptWorkFactor);
     const user = await prisma.user.create({
       data: { 
         email, 
@@ -45,7 +94,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       },
     });
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
+    const token = signAuthToken(user.id);
     setAuthCookie(res, token);
 
     res.status(201).json({ user: { id: user.id, email: user.email } });
@@ -57,36 +106,42 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ error: "Email and password are required" });
+    const validation = validateBody<LoginRequest>(req.body, schemas.login);
+    if (!validation.ok) {
+      sendValidationError(res, validation.errors);
       return;
     }
 
+    const { email, password } = validation.value;
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      res.status(400).json({ error: "Invalid credentials" });
+      res.status(400).json({ error: authConfig.failedLoginFailureMessage });
       return;
     }
 
     if (!user.passwordHash) {
-      res.status(400).json({ error: "This account uses Google Login" });
+      await trackFailedLogin(user.id);
+      res.status(400).json({ error: authConfig.failedLoginFailureMessage });
       return;
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
-      res.status(400).json({ error: "Invalid credentials" });
+      await trackFailedLogin(user.id);
+      res.status(400).json({ error: authConfig.failedLoginFailureMessage });
       return;
     }
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { lastLoginAt: new Date() }
+      data: {
+        lastLoginAt: new Date(),
+        failedLoginCount: 0,
+        lastFailedLoginAt: null,
+      }
     });
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
+    const token = signAuthToken(user.id);
     setAuthCookie(res, token);
 
     res.status(200).json({ user: { id: user.id, email: user.email, name: user.name } });
@@ -97,11 +152,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const logout = (req: Request, res: Response): void => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-  });
+  const validation = validateEmptyBody(req.body);
+  if (!validation.ok) {
+    sendValidationError(res, validation.errors);
+    return;
+  }
+
+  clearAuthCookie(res);
   res.status(200).json({ success: true, message: "Logged out successfully" });
 };
 
@@ -133,22 +190,24 @@ export const me = async (req: Request, res: Response): Promise<void> => {
 export const googleLoginRedirect = (req: Request, res: Response): void => {
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
     console.error("Google OAuth credentials not configured.");
-    res.redirect(`${FRONTEND_URL}/login?error=OAuthNotConfigured`);
+    redirectToLogin(res, "OAuthNotConfigured");
     return;
   }
 
-  // Generate CSRF state token
-  const state = crypto.randomBytes(16).toString("hex");
-  res.cookie("oauth_state", state, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 10 * 60 * 1000, // 10 minutes
-  });
+  const state = createOAuthState("google");
+  setOAuthStateCookie(res, state);
 
   const scope = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
-  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(scope)}&state=${state}`;
+  const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+  authUrl.search = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: appConfig.googleRedirectUri,
+    response_type: "code",
+    scope,
+    state,
+  }).toString();
   
-  res.redirect(authUrl);
+  res.redirect(authUrl.toString());
 };
 
 export const googleCallback = async (req: Request, res: Response): Promise<void> => {
@@ -156,15 +215,15 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
     const { code, state } = req.query;
     const savedState = req.cookies.oauth_state;
 
-    // Validate CSRF state
-    if (!state || state !== savedState) {
-      res.redirect(`${FRONTEND_URL}/login?error=InvalidOAuthState`);
+    if (!consumeOAuthState(state, savedState, "google")) {
+      clearOAuthStateCookie(res);
+      redirectToLogin(res, "InvalidOAuthState");
       return;
     }
-    res.clearCookie("oauth_state");
+    clearOAuthStateCookie(res);
 
     if (!code || typeof code !== "string") {
-      res.redirect(`${FRONTEND_URL}/login?error=InvalidGoogleCode`);
+      redirectToLogin(res, "InvalidGoogleCode");
       return;
     }
 
@@ -176,7 +235,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
         code,
         client_id: GOOGLE_CLIENT_ID,
         client_secret: GOOGLE_CLIENT_SECRET,
-        redirect_uri: GOOGLE_REDIRECT_URI,
+        redirect_uri: appConfig.googleRedirectUri,
         grant_type: "authorization_code",
       }),
     });
@@ -184,7 +243,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
     const tokenData = await tokenResponse.json();
     if (!tokenResponse.ok || !tokenData.access_token) {
       console.error("Token Exchange Error:", tokenData);
-      res.redirect(`${FRONTEND_URL}/login?error=GoogleTokenExchangeFailed`);
+      redirectToLogin(res, "GoogleTokenExchangeFailed");
       return;
     }
 
@@ -195,7 +254,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
 
     const profileData = await profileResponse.json();
     if (!profileResponse.ok || !profileData.email) {
-      res.redirect(`${FRONTEND_URL}/login?error=GoogleProfileFetchFailed`);
+      redirectToLogin(res, "GoogleProfileFetchFailed");
       return;
     }
 
@@ -230,13 +289,144 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
       });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
+    const token = signAuthToken(user.id);
     setAuthCookie(res, token);
 
     // Redirect to login with success flag (so frontend triggers the Granted animation)
-    res.redirect(`${FRONTEND_URL}/login?success=true`);
+    res.redirect(`${appConfig.frontendUrl}/login?success=true`);
   } catch (error) {
     console.error("Google Callback Error:", error);
-    res.redirect(`${FRONTEND_URL}/login?error=InternalServerError`);
+    redirectToLogin(res, "InternalServerError");
+  }
+};
+
+export const githubLoginRedirect = (req: Request, res: Response): void => {
+  const client_id = process.env.GITHUB_CLIENT_ID || "";
+  if (!client_id) {
+    console.error("GitHub OAuth credentials not configured.");
+    redirectToLogin(res, "OAuthNotConfigured");
+    return;
+  }
+
+  const state = createOAuthState("github");
+  setOAuthStateCookie(res, state);
+
+  const authUrl = new URL("https://github.com/login/oauth/authorize");
+  authUrl.search = new URLSearchParams({
+    client_id,
+    redirect_uri: appConfig.githubRedirectUri,
+    scope: "user:email",
+    state,
+  }).toString();
+
+  res.redirect(authUrl.toString());
+};
+
+export const githubCallback = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { code, state } = req.query;
+    const savedState = req.cookies.oauth_state;
+
+    if (!consumeOAuthState(state, savedState, "github")) {
+      clearOAuthStateCookie(res);
+      redirectToLogin(res, "InvalidOAuthState");
+      return;
+    }
+    clearOAuthStateCookie(res);
+
+    if (!code || typeof code !== "string") {
+      redirectToLogin(res, "InvalidGithubCode");
+      return;
+    }
+
+    const client_id = process.env.GITHUB_CLIENT_ID || "";
+    const client_secret = process.env.GITHUB_CLIENT_SECRET || "";
+
+    const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        client_id,
+        client_secret,
+        code,
+        redirect_uri: appConfig.githubRedirectUri,
+      }),
+    });
+
+    const tokenData = await tokenRes.json();
+    if (!tokenRes.ok || !tokenData.access_token) {
+      console.error("GitHub Token Exchange Failed:", tokenData);
+      redirectToLogin(res, "GithubTokenExchangeFailed");
+      return;
+    }
+
+    // Fetch GitHub user details
+    const userRes = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`,
+        "User-Agent": "LearnOpto",
+      },
+    });
+    const userData = await userRes.json();
+
+    let email = userData.email;
+    if (!email) {
+      const emailsRes = await fetch("https://api.github.com/user/emails", {
+        headers: {
+          Authorization: `Bearer ${tokenData.access_token}`,
+          "User-Agent": "LearnOpto",
+        },
+      });
+      const emailsData = await emailsRes.json();
+      if (Array.isArray(emailsData)) {
+        const primary = emailsData.find((e: any) => e.primary && e.verified) || emailsData[0];
+        if (primary) email = primary.email;
+      }
+    }
+
+    if (!email) {
+      redirectToLogin(res, "GithubEmailNotFound");
+      return;
+    }
+
+    const githubId = String(userData.id);
+    const name = userData.name || userData.login;
+    const image = userData.avatar_url || null;
+
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name,
+          image,
+          provider: "github",
+          providerId: githubId,
+          lastLoginAt: new Date(),
+        },
+      });
+    } else {
+      user = await prisma.user.update({
+        where: { email },
+        data: {
+          provider: "github",
+          providerId: githubId,
+          name: user.name || name,
+          image: user.image || image,
+          lastLoginAt: new Date(),
+        },
+      });
+    }
+
+    const token = signAuthToken(user.id);
+    setAuthCookie(res, token);
+
+    res.redirect(`${appConfig.frontendUrl}/login?success=true`);
+  } catch (error) {
+    console.error("Github Callback Error:", error);
+    redirectToLogin(res, "InternalServerError");
   }
 };

@@ -2,121 +2,124 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    /* Background: Off-white (slight green tint) */
-    --background: 144 15% 95%;
-    /* Main text: Dark green/black */
-    --foreground: 144 60% 10%;
+    /* Background: Warm off-white */
+    --background: 40 20% 97%;
+    /* Foreground: Near-black with warmth */
+    --foreground: 220 20% 12%;
 
-    /* Components (Cards, Popovers): Dark Green */
-    --card: 144 100% 10%;
-    /* Component Text: White/Off-white */
-    --card-foreground: 144 20% 95%;
+    /* Cards: White with subtle warmth */
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
 
-    --popover: 144 100% 10%;
-    --popover-foreground: 144 20% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
 
-    /* Primary: Neon Green */
-    --primary: 144 100% 35%;
+    /* Primary: Sophisticated emerald */
+    --primary: 152 60% 36%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Dark Green */
-    --secondary: 144 100% 15%;
-    --secondary-foreground: 0 0% 98%;
+    /* Secondary: Soft sage */
+    --secondary: 150 15% 93%;
+    --secondary-foreground: 220 20% 12%;
 
-    --muted: 144 20% 85%;
-    --muted-foreground: 144 40% 40%;
+    --muted: 220 10% 94%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 144 100% 40%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 152 50% 94%;
+    --accent-foreground: 152 60% 28%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 144 20% 80%;
-    --input: 144 20% 80%;
-    --ring: 144 100% 35%;
+    --border: 220 10% 90%;
+    --input: 220 10% 90%;
+    --ring: 152 60% 36%;
 
-    --radius: 1.5rem;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 0 0% 6%;
-    --foreground: 0 0% 98%;
+    /* Background: Deep charcoal */
+    --background: 225 15% 8%;
+    /* Foreground: Clean white */
+    --foreground: 0 0% 95%;
 
-    --card: 0 0% 9%;
-    --card-foreground: 0 0% 98%;
+    /* Cards: Slightly lighter than bg */
+    --card: 225 12% 11%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 225 12% 11%;
+    --popover-foreground: 0 0% 95%;
 
-    /* Primary: Neon Green */
-    --primary: 144 100% 50%;
+    /* Primary: Brighter emerald for dark mode contrast */
+    --primary: 152 72% 46%;
     --primary-foreground: 0 0% 0%;
 
-    /* Secondary: Darker Green / Accent */
-    --secondary: 144 100% 30%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 225 12% 16%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 225 10% 18%;
+    --muted-foreground: 220 10% 55%;
 
-    /* Accent: Maybe a slight cyan or pink, but mostly green theme */
-    --accent: 144 100% 40%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 152 40% 14%;
+    --accent-foreground: 152 72% 50%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 144 100% 50%;
-  }
-}
-
-@layer utilities {
-  .bg-grid-pattern {
-    background-size: 60px 60px;
-    background-image: 
-      linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-  }
-  .dark .bg-grid-pattern {
-    background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  }
-  
-  /* High Refresh Rate Optimizations */
-  .animate-fade-in,
-  .animate-fade-in-up,
-  .animate-scale-in,
-  .transition-all,
-  .transition-colors,
-  .transition-transform,
-  .transition-opacity {
-    will-change: transform, opacity;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    transform: translateZ(0);
+    --border: 225 10% 18%;
+    --input: 225 10% 18%;
+    --ring: 152 72% 46%;
   }
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-inter;
+    @apply bg-background text-foreground font-inter antialiased overflow-x-hidden min-h-screen;
+    touch-action: manipulation;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-poppins;
+  }
+
+  /* Prevent iOS Safari auto-zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in,
+  .animate-fade-in-up,
+  .animate-scale-in {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+
+  /* Safe area inset utilities for mobile notch / home indicator devices */
+  .safe-pt {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  .safe-pb {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .safe-pl {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  .safe-pr {
+    padding-right: max(1rem, env(safe-area-inset-right));
   }
 }

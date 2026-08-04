@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -11,6 +12,14 @@ export default {
       screens: {
         "2xl": "1400px",
       },
+    },
+    screens: {
+      xs: "375px",
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1400px",
     },
     extend: {
       fontFamily: {
@@ -122,20 +131,11 @@ export default {
         "fade-in-up": "fade-in-up 0.6s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
       },
-      backgroundImage: {
-        "gradient-primary": "var(--gradient-primary)",
-        "gradient-hero": "var(--gradient-hero)",
-        "gradient-card": "var(--gradient-card)",
-      },
       boxShadow: {
-        "brutalist": "4px 4px 0px 0px rgba(0,0,0,1)",
-        "brutalist-lg": "8px 8px 0px 0px rgba(0,0,0,1)",
-        "brutalist-dark": "4px 4px 0px 0px rgba(255,255,255,1)",
-        "brutalist-lg-dark": "8px 8px 0px 0px rgba(255,255,255,1)",
-        "clay": "inset 4px 4px 8px rgba(255,255,255,0.8), inset -4px -4px 8px rgba(0,0,0,0.05)",
-        "clay-dark": "inset 4px 4px 8px rgba(255,255,255,0.1), inset -4px -4px 8px rgba(0,0,0,0.6)",
+        "soft": "0 2px 15px -3px rgba(0,0,0,0.07), 0 10px 20px -2px rgba(0,0,0,0.04)",
+        "soft-lg": "0 10px 40px -10px rgba(0,0,0,0.1)",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

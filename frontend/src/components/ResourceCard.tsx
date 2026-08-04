@@ -1,14 +1,27 @@
-import { ExternalLink, Eye } from "lucide-react";
+import { ExternalLink, Eye, Bookmark, BookmarkCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-interface ResourceCardProps {
+export interface ResourceCardProps {
+  id?: string;
   title: string;
   description: string;
   url: string;
   type: "youtube" | "podcast" | "documentation" | "course";
+  source?: string;
   index: number;
   views?: string;
+  isSaved?: boolean;
+  savedId?: string;
+  onToggleSave?: (data: {
+    title: string;
+    description: string;
+    url: string;
+    source: string;
+    type: string;
+    isSaved?: boolean;
+    savedId?: string;
+  }) => void;
 }
 
 const typeColors = {
@@ -25,49 +38,109 @@ const typeLabels = {
   course: "Course",
 };
 
-export const ResourceCard = ({ title, description, url, type, index, views }: ResourceCardProps) => {
+export const ResourceCard = ({
+  title,
+  description,
+  url,
+  type,
+  source,
+  index,
+  views,
+  isSaved = false,
+  savedId,
+  onToggleSave,
+}: ResourceCardProps) => {
+  const handleOpenLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!url || url === "#" || url === "") return;
+
+    // Fire non-blocking tracking call in background
+    fetch("http://localhost:3000/api/resources/interaction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ url }),
+    }).catch(() => {
+      // Fail silently on tracking errors — never show error toast
+    });
+
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   return (
-    <Card 
-      className="group hover:shadow-brutalist-lg dark:hover:shadow-brutalist-lg-dark shadow-brutalist dark:shadow-brutalist-dark transition-all duration-300 hover:-translate-y-1 bg-card border-4 border-black dark:border-white overflow-hidden rounded-2xl flex flex-col"
+    <Card
+      className="group hover:border-primary/40 shadow-sm hover:shadow-md transition-all duration-300 bg-card border border-border/80 overflow-hidden rounded-2xl flex flex-col min-w-0"
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      <CardHeader className="pb-3 space-y-3">
-        <div className="flex flex-wrap gap-2 items-center">
-          <Badge className={`${typeColors[type]} font-inter text-xs px-3 py-1 rounded-xl shadow-clay dark:shadow-clay-dark border-2 border-black dark:border-white font-bold`}>
-            {typeLabels[type]}
-          </Badge>
-          {views && (
-            <Badge variant="secondary" className="gap-1 text-xs px-3 py-1 rounded-xl font-inter shadow-clay dark:shadow-clay-dark border-2 border-black dark:border-white font-bold">
-              <Eye className="h-3 w-3" />
-              {views}
+      <CardHeader className="pb-3 space-y-3 p-5">
+        <div className="flex flex-wrap gap-2 items-center justify-between">
+          <div className="flex flex-wrap gap-2 items-center min-w-0">
+            <Badge
+              className={`${typeColors[type] || "bg-primary/10 text-primary"} font-inter text-[11px] px-2.5 py-0.5 rounded-lg border border-primary/20 font-semibold`}
+            >
+              {typeLabels[type] || type}
             </Badge>
-          )}
+            {views && (
+              <Badge
+                variant="secondary"
+                className="gap-1 text-[11px] px-2.5 py-0.5 rounded-lg font-inter font-medium"
+              >
+                <Eye className="h-3 w-3" />
+                {views}
+              </Badge>
+            )}
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onToggleSave) {
+                onToggleSave({
+                  title,
+                  description,
+                  url,
+                  source: source || type,
+                  type,
+                  isSaved,
+                  savedId,
+                });
+              }
+            }}
+            title={isSaved ? "Remove from saved" : "Save resource"}
+            className="text-muted-foreground hover:text-primary active:scale-95 transition-all min-w-[44px] min-h-[44px] p-2 flex items-center justify-center rounded-xl hover:bg-accent -mr-1"
+          >
+            {isSaved ? (
+              <BookmarkCheck className="h-5 w-5 text-primary fill-primary/20" />
+            ) : (
+              <Bookmark className="h-5 w-5" />
+            )}
+          </button>
         </div>
-        <CardTitle className="text-base md:text-lg group-hover:text-primary transition-colors font-black uppercase tracking-tight font-poppins leading-snug line-clamp-2">
+
+        <CardTitle
+          onClick={handleOpenLink}
+          className="text-base sm:text-lg group-hover:text-primary transition-colors font-bold tracking-tight font-poppins leading-snug line-clamp-2 cursor-pointer break-words min-w-0"
+        >
           {title}
         </CardTitle>
-        <CardDescription className="line-clamp-3 text-xs md:text-sm mt-2 font-inter leading-relaxed">
+
+        <CardDescription className="line-clamp-3 text-xs sm:text-sm mt-1.5 font-inter leading-relaxed break-words min-w-0">
           {description}
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 p-5 mt-auto">
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-primary hover:text-accent transition-all hover:gap-3 duration-300 font-medium text-sm md:text-base font-inter group/link break-words"
-          onClick={(e) => {
-            // Ensure URL is properly formatted
-            if (!url || url === '#' || url === '') {
-              e.preventDefault();
-              console.error('Invalid URL:', url);
-            }
-          }}
+          onClick={handleOpenLink}
+          className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-semibold text-xs sm:text-sm font-inter group/link min-h-[44px] py-1 break-words min-w-0"
         >
           <span className="line-clamp-1">Visit Resource</span>
-          <ExternalLink className="h-4 w-4 flex-shrink-0 group-hover/link:translate-x-1 group-hover/link:scale-110 transition-all" />
+          <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 group-hover/link:translate-x-1 transition-all" />
         </a>
       </CardContent>
     </Card>
   );
 };
+
