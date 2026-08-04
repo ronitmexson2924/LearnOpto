@@ -454,11 +454,6 @@ export default function Dashboard() {
         </a>
 
         <div className="flex items-center gap-4">
-          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-muted-foreground">
-            <a href="/about" className="hover:text-foreground transition-colors">About Creator</a>
-            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
-            <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
-          </nav>
           <ThemeToggle />
           <Button
             variant="ghost"
@@ -759,13 +754,8 @@ export default function Dashboard() {
 
       {/* Footer */}
       <footer className="w-full py-4 px-6 border-t border-border/40 bg-background mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-muted-foreground">
+        <div className="max-w-7xl mx-auto text-center text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} LearnOpto. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <a href="/about" className="hover:text-foreground transition-colors">About Creator</a>
-            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="/terms" className="hover:text-foreground transition-colors">Terms of Service</a>
-          </div>
         </div>
       </footer>
     </motion.div>

@@ -7,7 +7,7 @@ export interface ResourceCardProps {
   title: string;
   description: string;
   url: string;
-  type: "youtube" | "podcast" | "documentation" | "course";
+  type: "youtube" | "podcast" | "documentation" | "course" | "video" | "article" | "audio" | "docs" | string;
   source?: string;
   index: number;
   views?: string;
@@ -24,17 +24,25 @@ export interface ResourceCardProps {
   }) => void;
 }
 
-const typeColors = {
+const typeColors: Record<string, string> = {
   youtube: "bg-red-500/10 text-red-600 dark:text-red-400",
+  video: "bg-red-500/10 text-red-600 dark:text-red-400",
   podcast: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+  audio: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
   documentation: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  docs: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  article: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   course: "bg-green-500/10 text-green-600 dark:text-green-400",
 };
 
-const typeLabels = {
+const typeLabels: Record<string, string> = {
   youtube: "YouTube",
+  video: "Video",
   podcast: "Podcast",
+  audio: "Audio",
   documentation: "Documentation",
+  docs: "Docs",
+  article: "Article",
   course: "Course",
 };
 

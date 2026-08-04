@@ -84,13 +84,7 @@ export default function Index() {
             </span>
           </a>
 
-          <div className="flex items-center gap-4 sm:gap-6">
-            <nav className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-medium text-muted-foreground">
-              <a href="/about" className="hover:text-foreground transition-colors">About Creator</a>
-              <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
-              <a href="/terms" className="hover:text-foreground transition-colors">Terms of Use</a>
-            </nav>
-
+          <div className="flex items-center gap-3 sm:gap-4">
             <ThemeToggle />
             <Button
               onClick={() => navigateTo("/login")}

@@ -294,8 +294,13 @@ export const searchResources = async (req: AuthenticatedRequest, res: Response):
     // Call Gemini API to generate resources (request 6 to 8 items to account for validation filtering)
     const prompt = `You are an expert learning resource curator. The user wants to learn about: "${topic}".
 ${preferredFormatsHint}
-Generate 6 to 8 high-quality, highly relevant, real learning resources across different formats (a mix of YouTube videos, podcasts, articles, and documentation/courses).
-Ensure all URLs provided are real, accurate, standard canonical URLs (e.g., https://youtube.com/watch?v=..., https://react.dev, https://docs.python.org, https://developer.mozilla.org, etc.).
+
+Find 6 to 8 real, currently live learning resources across a mix of formats (YouTube videos, podcasts, articles, and documentation/courses).
+
+Rules:
+- Every URL must be real, accurate, and currently live — never construct, guess, or recall a fake URL from memory.
+- Prefer official/canonical sources (official documentation, official YouTube channels, well-known platforms like MDN, Coursera, freeCodeCamp, etc.).
+- If you cannot find a real, verifiable resource for a slot, return fewer items rather than inventing one.
 
 Return the result strictly as a JSON array of objects with the following keys:
 - title: String
@@ -303,7 +308,7 @@ Return the result strictly as a JSON array of objects with the following keys:
 - url: String
 - type: String (one of: 'video', 'course', 'article', 'documentation')
 
-Do not include any markdown formatting or extra text, just the raw JSON array.`;
+Do not include any markdown formatting or extra conversational text, output only the raw JSON array.`;
 
     const response = await geminiKeyManager.generateContent(prompt, "gemini-2.5-flash");
 

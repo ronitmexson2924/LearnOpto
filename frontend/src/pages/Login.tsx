@@ -95,11 +95,6 @@ const Login = () => {
         </a>
 
         <div className="flex items-center gap-4">
-          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-muted-foreground">
-            <a href="/about" className="hover:text-foreground transition-colors">About Creator</a>
-            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
-          </nav>
           <ThemeToggle />
         </div>
       </header>
