@@ -36,7 +36,7 @@ const allowedOrigins = Array.from(new Set([
 ]));
 
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
     if (!origin) return callback(null, true);
     const cleaned = origin.replace(/\/+$/, "");
     if (allowedOrigins.includes(cleaned)) {
@@ -60,7 +60,7 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
-server.on('error', (err) => {
+server.on('error', (err: Error) => {
   console.error("Server error:", err);
 });
 
