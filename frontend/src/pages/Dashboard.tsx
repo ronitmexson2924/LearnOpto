@@ -3,11 +3,12 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { SearchBar } from "@/components/SearchBar";
 import { ResourceCard } from "@/components/ResourceCard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Clock, ShieldCheck, Trash2, BookmarkCheck, Sparkles, LogOut, Loader2, Plus } from "lucide-react";
+import { Clock, ShieldCheck, Trash2, BookmarkCheck, Sparkles, LogOut, Loader2, Plus, X } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { navigateTo } from "@/lib/navigation";
+import { navigateTo, reloadCurrentPage } from "@/lib/navigation";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 type ResourceType = "youtube" | "podcast" | "documentation" | "course" | "video" | "article" | "audio" | "docs";
 
@@ -125,6 +126,7 @@ export default function Dashboard() {
   const [searchResults, setSearchResults] = useState<Resource[] | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"results" | "saved">("results");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Auth Check - verify session
   const { data: userProfile } = useQuery({
@@ -440,20 +442,41 @@ export default function Dashboard() {
       animate="visible"
       className="min-h-[100dvh] font-inter bg-background text-foreground flex flex-col"
     >
+      <SEOHead
+        title="Personal Learning Dashboard — LearnOpto"
+        description="Your personal LearnOpto AI learning dashboard."
+        noindex={true}
+      />
 
       {/* Top Header */}
       <motion.header
         variants={headerVariants}
         className="border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-40 px-6 h-16 flex items-center justify-between"
       >
-        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            reloadCurrentPage();
+          }}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-primary-foreground" />
           </div>
           <span className="text-lg font-semibold tracking-tight font-poppins">LearnOpto</span>
         </a>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="lg:hidden text-xs font-medium gap-1.5 h-9 px-2.5 sm:px-3 rounded-xl border-border hover:bg-accent"
+          >
+            <Clock className="w-3.5 h-3.5 text-primary" />
+            <span>History & Stats</span>
+          </Button>
           <ThemeToggle />
           <Button
             variant="ghost"
@@ -462,21 +485,21 @@ export default function Dashboard() {
             className="text-xs font-medium text-muted-foreground hover:text-foreground gap-1.5"
           >
             <LogOut className="w-3.5 h-3.5" />
-            Log out
+            <span className="hidden sm:inline">Log out</span>
           </Button>
         </div>
       </motion.header>
 
       {/* Hero / Search Section */}
-      <div className="flex flex-col items-center pt-10 pb-8 px-4 text-center">
+      <div className="flex flex-col items-center pt-8 pb-6 sm:pt-10 sm:pb-8 px-4 text-center">
         <motion.div variants={sectionVariants} className="mb-6 flex flex-col items-center max-w-2xl">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium border border-primary/20 mb-4">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium border border-primary/20 mb-3 sm:mb-4">
             <Sparkles className="w-3.5 h-3.5 text-primary" /> AI-Powered Resource Curation
           </span>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight font-poppins mb-3">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight font-poppins mb-3">
             Discover top learning resources
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+          <p className="text-xs sm:text-base text-muted-foreground leading-relaxed max-w-xl">
             Type any topic to generate hand-picked YouTube videos, podcasts, documentation, and courses.
           </p>
         </motion.div>
@@ -487,13 +510,13 @@ export default function Dashboard() {
       </div>
 
       {/* Main Grid Layout (Responsive Flex/Grid: stacked on mobile, 2 columns on desktop) */}
-      <div className="flex-1 border-t border-border max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px]">
+      <div className="flex-1 border-t border-border max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px]">
         {/* Left Feed Panel */}
-        <div className="p-6 sm:p-8 lg:border-r border-border">
+        <div className="p-4 sm:p-6 lg:p-8 lg:border-r border-border">
           {/* Feed Header / View Mode Controls */}
           <motion.div variants={sectionVariants} className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
                 {/* Mode toggle */}
                 <div className="flex items-center bg-muted/60 p-1 rounded-xl border border-border/80">
                   <button
@@ -519,14 +542,14 @@ export default function Dashboard() {
                   </button>
                 </div>
 
-                <span className="hidden sm:flex text-xs font-medium text-muted-foreground items-center gap-1.5">
+                <span className="flex sm:flex text-xs font-medium text-muted-foreground items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                   {viewMode === "saved" ? "Saved Library" : "Learning Feed"}
                 </span>
               </div>
 
               {/* Filters */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 touch-pan-x">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 touch-pan-x no-scrollbar">
                 {FILTERS.map((f) => (
                   <button
                     key={f.key}
@@ -545,7 +568,7 @@ export default function Dashboard() {
 
             {/* Loading / Grid / Empty State */}
             {searchMutation.isPending ? (
-              <div className="p-12 text-center border border-dashed border-border rounded-2xl bg-card">
+              <div className="p-8 sm:p-12 text-center border border-dashed border-border rounded-2xl bg-card">
                 <Loader2 className="w-7 h-7 text-primary animate-spin mx-auto mb-3" />
                 <p className="text-sm font-medium text-foreground">Searching for top learning resources...</p>
                 <p className="text-xs text-muted-foreground mt-1">Curating YouTube videos, podcasts, docs, and courses</p>
@@ -557,7 +580,7 @@ export default function Dashboard() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
                 >
                   {filteredResources.map((resource, i) => (
                     <motion.div
@@ -731,24 +754,6 @@ export default function Dashboard() {
               })}
             </div>
           </motion.div>
-
-          {/* Account & Session Security */}
-          <motion.div custom={4} variants={sidebarItemVariants} initial="hidden" animate="visible">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 font-poppins">
-              <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Session Security
-            </h3>
-
-            <div className="bg-card border border-border p-3.5 rounded-xl space-y-2 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Auth Provider:</span>
-                <span className="font-semibold text-foreground uppercase text-[11px] bg-accent px-2 py-0.5 rounded-md">OAuth 2.0</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Session Token:</span>
-                <span className="font-mono text-[11px] text-primary">HTTP-Only Cookie</span>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </div>
 
@@ -758,6 +763,176 @@ export default function Dashboard() {
           <p>© {new Date().getFullYear()} LearnOpto. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* Mobile Slide-Over Drawer for History & Stats (< lg screens) */}
+      <AnimatePresence>
+        {isMobileSidebarOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 lg:hidden"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm bg-card border-l border-border p-5 sm:p-6 shadow-2xl z-50 overflow-y-auto lg:hidden flex flex-col gap-6"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <h2 className="text-sm font-bold font-poppins">History & Activity</h2>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                  className="rounded-xl h-9 w-9"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Create New Entry Button */}
+              <div>
+                <Button
+                  onClick={() => {
+                    handleCreateNewEntry();
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-medium text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create New Entry
+                </Button>
+              </div>
+
+              {/* Search History */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 font-poppins">
+                  <Clock className="w-3.5 h-3.5 text-primary" /> Search History
+                </h3>
+
+                <div className="flex flex-col gap-2">
+                  {isLoadingHistory ? (
+                    <p className="text-xs text-muted-foreground">Loading history...</p>
+                  ) : history.length > 0 ? (
+                    history.map((query, i) => (
+                      <div
+                        key={query.id}
+                        onClick={() => {
+                          setSearchResults(null);
+                          setActiveFeedId(query.id);
+                          setViewMode("results");
+                          setIsMobileSidebarOpen(false);
+                        }}
+                        className={`p-3 rounded-xl border transition-all cursor-pointer flex justify-between items-start ${
+                          activeFeedId === query.id || (!activeFeedId && !searchResults && i === 0 && viewMode === "results")
+                            ? "bg-card border-primary shadow-sm"
+                            : "bg-card/60 border-border hover:border-primary/50 hover:bg-card"
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0 pr-2">
+                          <p className="text-xs font-medium text-foreground truncate">
+                            {query.query}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">
+                            {formatDate(query.createdAt)} · {query.resources?.length || 0} items
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteHistoryMutation.mutate(query.id);
+                          }}
+                          title="Delete search entry"
+                          className="text-muted-foreground hover:text-destructive transition-colors min-w-[44px] min-h-[44px] p-2 flex items-center justify-center rounded-xl hover:bg-destructive/10 shrink-0 -mr-1"
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive/70" />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">No recent search history</p>
+                  )}
+                </div>
+              </div>
+
+              {/* User Analytics Summary */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2 font-poppins">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" /> Activity Analytics
+                </h3>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-card border border-border p-2.5 rounded-xl">
+                    <span className="text-base font-bold text-foreground block font-poppins">
+                      {analyticsData?.analytics?.totalSearches || 0}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-medium">Searches</span>
+                  </div>
+                  <div className="bg-card border border-border p-2.5 rounded-xl">
+                    <span className="text-base font-bold text-foreground block font-poppins">
+                      {analyticsData?.analytics?.totalResourcesSaved || 0}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-medium">Saved</span>
+                  </div>
+                  <div className="bg-card border border-border p-2.5 rounded-xl">
+                    <span className="text-base font-bold text-foreground block font-poppins">
+                      {analyticsData?.analytics?.totalResourcesViewed || 0}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-medium">Viewed</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Format Preferences */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-2 font-poppins">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" /> Format Preferences
+                </h3>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {[
+                    { id: "video", label: "Videos" },
+                    { id: "podcast", label: "Podcasts" },
+                    { id: "documentation", label: "Docs" },
+                    { id: "course", label: "Courses" },
+                  ].map((fmt) => {
+                    const currentPrefs = preferencesData?.preferences?.preferredSources || ["video", "podcast", "documentation", "course"];
+                    const isSelected = currentPrefs.includes(fmt.id);
+
+                    const toggleFormat = () => {
+                      let updated = isSelected
+                        ? currentPrefs.filter((p) => p !== fmt.id)
+                        : [...currentPrefs, fmt.id];
+                      if (updated.length === 0) updated = ["video", "podcast", "documentation", "course"];
+                      updatePreferencesMutation.mutate(updated);
+                    };
+
+                    return (
+                      <button
+                        key={fmt.id}
+                        onClick={toggleFormat}
+                        className={`px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium transition-all ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                            : "bg-card border border-border text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {fmt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

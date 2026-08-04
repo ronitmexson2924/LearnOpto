@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, BookOpen, TrendingUp, ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { navigateTo } from "@/lib/navigation";
+import { navigateTo, reloadCurrentPage } from "@/lib/navigation";
+import { SEOHead } from "@/components/seo/SEOHead";
 
 type AuthState = "IDLE" | "AUTHENTICATING" | "GRANTED" | "DENIED";
 
@@ -79,6 +80,11 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-background text-foreground font-inter relative overflow-hidden">
+      <SEOHead
+        title="Sign In & Authentication — LearnOpto"
+        description="Sign in to LearnOpto with Google OAuth 2.0, GitHub OAuth, or WebAuthn Passkeys to access your personalized library, saved resources, and search history."
+        canonicalUrl="https://learnopto.com/login"
+      />
       {/* Ambient gradient background orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute -top-[30%] -right-[15%] w-[600px] h-[600px] rounded-full bg-primary/[0.04] blur-[120px]" />
@@ -86,8 +92,15 @@ const Login = () => {
       </div>
 
       {/* Header */}
-      <header className="w-full px-6 py-4 flex items-center justify-between z-10 border-b border-border/40">
-        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+      <header className="w-full px-4 sm:px-6 py-4 flex items-center justify-between z-10 border-b border-border/40">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            reloadCurrentPage();
+          }}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-primary-foreground" />
           </div>
@@ -100,67 +113,67 @@ const Login = () => {
       </header>
 
       {/* Main Split-Screen Layout */}
-      <main className="flex-1 flex items-center justify-center p-6 sm:p-10 z-10">
-        <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12 z-10">
+        <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           
           {/* Left Column: Branding & Feature List */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col justify-center space-y-8"
+            className="flex flex-col justify-center space-y-6 sm:space-y-8"
           >
             <div>
-              <div className="flex items-center gap-2.5 mb-6">
+              <div className="flex items-center gap-2.5 mb-4 sm:mb-6">
                 <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm">
                   <Sparkles className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <span className="text-xl font-bold font-poppins tracking-tight">LearnOpto</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.1] mb-4 font-poppins">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.1] mb-3 sm:mb-4 font-poppins">
                 Master anything,<br />
                 <span className="text-primary">faster.</span>
               </h1>
 
-              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-md">
+              <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed max-w-md">
                 Join the next generation of learners using AI to curate perfect study paths.
               </p>
             </div>
 
             {/* Feature List */}
-            <div className="space-y-6 pt-2">
-              <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-2xl bg-accent flex items-center justify-center text-primary shrink-0 shadow-sm mt-0.5">
+            <div className="space-y-4 sm:space-y-6 pt-1 sm:pt-2">
+              <div className="flex items-start gap-3.5 sm:gap-4">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-accent flex items-center justify-center text-primary shrink-0 shadow-sm mt-0.5">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground font-poppins">AI-Curated Resources</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground font-poppins">AI-Curated Resources</h3>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed mt-0.5">
                     Get personalized reading lists and courses tailored to your exact goal.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-2xl bg-accent flex items-center justify-center text-primary shrink-0 shadow-sm mt-0.5">
+              <div className="flex items-start gap-3.5 sm:gap-4">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-accent flex items-center justify-center text-primary shrink-0 shadow-sm mt-0.5">
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground font-poppins">Personal Library</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground font-poppins">Personal Library</h3>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed mt-0.5">
                     Organize your materials, highlight key insights, and build a second brain.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-2xl bg-accent flex items-center justify-center text-primary shrink-0 shadow-sm mt-0.5">
+              <div className="flex items-start gap-3.5 sm:gap-4">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-accent flex items-center justify-center text-primary shrink-0 shadow-sm mt-0.5">
                   <TrendingUp className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground font-poppins">Track Progress</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground font-poppins">Track Progress</h3>
+                  <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed mt-0.5">
                     Visualize your learning journey and stay motivated with adaptive milestones.
                   </p>
                 </div>
@@ -175,7 +188,7 @@ const Login = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="w-full max-w-md mx-auto"
           >
-            <div className="bg-card border border-border/80 rounded-3xl p-8 sm:p-10 shadow-xl relative overflow-hidden">
+            <div className="bg-card border border-border/80 rounded-3xl p-6 sm:p-8 lg:p-10 shadow-xl relative overflow-hidden">
               <AnimatePresence mode="wait">
                 {authState === "IDLE" && (
                   <motion.div

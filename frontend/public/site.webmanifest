@@ -1,0 +1,17 @@
+{
+  "name": "LearnOpto — AI Educational Search Assistant",
+  "short_name": "LearnOpto",
+  "description": "AI-powered educational search platform that curates top YouTube videos, podcasts, documentation, and courses.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

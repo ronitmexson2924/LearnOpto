@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { navigateTo } from "@/lib/navigation";
+import { navigateTo, reloadCurrentPage } from "@/lib/navigation";
 
 const getErrorMessage = (error: unknown, fallback: string) => {
   return error instanceof Error ? error.message : fallback;
@@ -58,7 +58,14 @@ const Signup = () => {
 
       {/* Header */}
       <header className="w-full px-6 py-4 flex items-center justify-between z-10 border-b border-border/40">
-        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            reloadCurrentPage();
+          }}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-primary-foreground" />
           </div>

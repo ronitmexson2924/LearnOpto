@@ -20,3 +20,7 @@ export const navigateBack = () => {
 
   navigateTo("/");
 };
+
+export const reloadCurrentPage = () => {
+  window.location.reload();
+};

@@ -1,14 +1,36 @@
+# Allow indexing for major search engines and AI agents
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
-User-agent: Twitterbot
+User-agent: PerplexityBot
 Allow: /
 
-User-agent: facebookexternalhit
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: DuckDuckGo
+Allow: /
+
+User-agent: BraveBot
 Allow: /
 
 User-agent: *
 Allow: /
+
+# Prevent crawling private authentication/dashboard states
+Disallow: /api/auth/
+Disallow: /dashboard
+
+Sitemap: https://learnopto.com/sitemap.xml

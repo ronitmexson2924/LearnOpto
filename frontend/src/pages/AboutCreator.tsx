@@ -2,11 +2,23 @@ import { motion } from "framer-motion";
 import { Sparkles, Code2, Cpu, Rocket, ArrowLeft, Globe, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { navigateBack } from "@/lib/navigation";
+import { navigateBack, reloadCurrentPage } from "@/lib/navigation";
+
+import { SEOHead } from "@/components/seo/SEOHead";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { buildOrganizationSchema } from "@/components/seo/schemaHelpers";
 
 export default function AboutCreator() {
+  const orgSchema = buildOrganizationSchema();
+
   return (
     <div className="min-h-screen flex flex-col justify-between bg-background text-foreground font-inter relative overflow-hidden">
+      <SEOHead
+        title="About Ronit Mexson — Creator & Architect of LearnOpto"
+        description="Learn about Ronit Mexson, creator of LearnOpto. Built to solve search fatigue by organizing video courses, technical documentation, podcasts, and roadmaps with AI."
+        canonicalUrl="https://learnopto.com/about"
+      />
+      <JsonLd data={orgSchema} />
       {/* Background ambient lighting */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute -top-[20%] -right-[10%] w-[500px] h-[500px] rounded-full bg-primary/[0.04] blur-[120px]" />
@@ -15,7 +27,14 @@ export default function AboutCreator() {
 
       {/* Top Header */}
       <header className="w-full px-6 py-4 flex items-center justify-between border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-40">
-        <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            reloadCurrentPage();
+          }}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-primary-foreground" />
           </div>

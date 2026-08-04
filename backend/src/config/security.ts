@@ -124,7 +124,7 @@ export const rateLimitConfig = {
   passkeyAuthWindowMs: parsePositiveInt("PASSKEY_AUTH_RATE_LIMIT_WINDOW_MS", 15 * 60 * 1000),
   passkeyAuthMax: parsePositiveInt("PASSKEY_AUTH_RATE_LIMIT_MAX", 20),
   geminiSearchWindowMs: parsePositiveInt("GEMINI_SEARCH_RATE_LIMIT_WINDOW_MS", 60 * 1000),
-  geminiSearchMax: parsePositiveInt("GEMINI_SEARCH_RATE_LIMIT_MAX", 20),
+  geminiSearchMax: parsePositiveInt("GEMINI_SEARCH_RATE_LIMIT_MAX", 7),
 };
 
 export const searchQuotaConfig = {

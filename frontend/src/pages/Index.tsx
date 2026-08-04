@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { navigateTo, reloadCurrentPage } from "@/lib/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Search,
@@ -21,7 +22,9 @@ import {
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { navigateTo } from "@/lib/navigation";
+import { SEOHead } from "@/components/seo/SEOHead";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { buildWebSiteSchema, buildOrganizationSchema, buildSoftwareApplicationSchema } from "@/components/seo/schemaHelpers";
 
 export default function Index() {
   const featuresAnimation = useScrollAnimation();
@@ -31,41 +34,45 @@ export default function Index() {
 
   const [activeDemoTab, setActiveDemoTab] = useState<"all" | "video" | "docs">("all");
 
+  const websiteSchema = buildWebSiteSchema();
+  const orgSchema = buildOrganizationSchema();
+  const softwareSchema = buildSoftwareApplicationSchema();
+
   const sampleDemoItems = [
     {
       title: "Quantum Computing for Beginners",
+      desc: "Comprehensive intro to qubits, quantum gates, and algorithm basics with visual diagrams.",
+      badge: "Video Course",
       source: "YouTube • IBM Quantum",
       type: "video",
       icon: Play,
-      badge: "Video Tutorial",
-      desc: "Comprehensive intro covering qubits, superposition, and quantum gates.",
     },
     {
-      title: "Qiskit Official Documentation & Guides",
-      source: "Qiskit.org",
+      title: "Machine Learning Concepts Whitepaper",
+      desc: "Key principles of neural networks, gradient descent, and deep learning architectures summarized.",
+      badge: "PDF / Paper",
+      source: "Documentation • arXiv",
       type: "docs",
       icon: FileText,
-      badge: "Documentation",
-      desc: "Interactive Python notebook guides and quantum algorithm references.",
     },
     {
-      title: "The Quantum Hardware Revolution",
-      source: "Podcast • Physics World",
-      type: "audio",
+      title: "Clean Architecture Audio Summary",
+      desc: "A concise 15-minute key takeaway guide on designing resilient software systems.",
+      badge: "Audio Guide",
+      source: "Audiobook • TechTalks",
+      type: "video",
       icon: Headphones,
-      badge: "Podcast Episode",
-      desc: "Deep dive into superconducting chips, ion traps, and error correction.",
     },
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
-      className="min-h-screen relative overflow-hidden font-inter bg-background text-foreground"
-    >
+    <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary relative overflow-hidden font-inter">
+      <SEOHead
+        title="LearnOpto — Fast, Smart & Focused Learning Engine"
+        description="LearnOpto is the ultimate personal learning operating system. Aggregate, summarize, roadmap, and master knowledge faster with AI."
+        canonicalUrl="https://learnopto.com"
+      />
+      <JsonLd data={[websiteSchema, orgSchema, softwareSchema]} />
       {/* Ambient background glow orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute -top-[30%] -right-[15%] w-[800px] h-[800px] rounded-full bg-primary/[0.04] blur-[140px]" />
@@ -75,7 +82,14 @@ export default function Index() {
       {/* ─── HEADER ─── */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40">
         <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              reloadCurrentPage();
+            }}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-sm">
               <Sparkles className="w-4 h-4 text-primary-foreground" />
             </div>
@@ -287,7 +301,7 @@ export default function Index() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
               {
                 icon: Sparkles,
@@ -456,32 +470,56 @@ export default function Index() {
       </main>
 
       {/* ─── FOOTER ─── */}
-      <footer className="border-t border-border/40 bg-background py-8">
-        <div className="container mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
+      <footer className="border-t border-border/40 bg-background py-12">
+        <div className="container mx-auto px-4 sm:px-6 space-y-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-xs text-muted-foreground">
+            <div>
+              <h4 className="font-bold text-foreground font-poppins mb-3">Popular Topics</h4>
+              <ul className="space-y-2">
+                <li><a href="/topics/react" className="hover:text-primary transition-colors">React 18 & Next.js</a></li>
+                <li><a href="/topics/python" className="hover:text-primary transition-colors">Python & Data Science</a></li>
+                <li><a href="/topics/system-design" className="hover:text-primary transition-colors">System Design</a></li>
+                <li><a href="/topics/machine-learning" className="hover:text-primary transition-colors">Machine Learning & AI</a></li>
+              </ul>
             </div>
-            <span className="font-semibold text-foreground font-poppins">LearnOpto</span>
+            <div>
+              <h4 className="font-bold text-foreground font-poppins mb-3">Learning Roadmaps</h4>
+              <ul className="space-y-2">
+                <li><a href="/roadmaps/frontend-development" className="hover:text-primary transition-colors">Frontend Developer</a></li>
+                <li><a href="/roadmaps/backend-development" className="hover:text-primary transition-colors">Backend Architecture</a></li>
+                <li><a href="/roadmaps/ai-engineering" className="hover:text-primary transition-colors">AI Engineer Roadmap</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold text-foreground font-poppins mb-3">Core Features</h4>
+              <ul className="space-y-2">
+                <li><a href="/features/ai-search" className="hover:text-primary transition-colors">AI Educational Search</a></li>
+                <li><a href="/features/personal-library" className="hover:text-primary transition-colors">Personal Library</a></li>
+                <li><a href="/features/roadmaps" className="hover:text-primary transition-colors">Interactive Roadmaps</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold text-foreground font-poppins mb-3">Platform & Legal</h4>
+              <ul className="space-y-2">
+                <li><a href="/faq" className="hover:text-primary transition-colors font-semibold text-primary">Frequently Asked Questions (FAQ)</a></li>
+                <li><a href="/about" className="hover:text-primary transition-colors">About Creator</a></li>
+                <li><a href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</a></li>
+                <li><a href="/terms" className="hover:text-primary transition-colors">Terms of Service</a></li>
+              </ul>
+            </div>
           </div>
 
-          <p>© {new Date().getFullYear()} LearnOpto. All rights reserved.</p>
-
-          <div className="flex items-center gap-4">
-            <a href="/about" className="hover:text-foreground transition-colors">About Creator</a>
-            <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="/terms" className="hover:text-foreground transition-colors">Terms of Use</a>
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-foreground transition-colors"
-            >
-              GitHub
-            </a>
+          <div className="pt-6 border-t border-border/40 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+                <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
+              </div>
+              <span className="font-semibold text-foreground font-poppins">LearnOpto</span>
+            </div>
+            <p>© {new Date().getFullYear()} LearnOpto. All rights reserved.</p>
           </div>
         </div>
       </footer>
-    </motion.div>
+    </div>
   );
 }
