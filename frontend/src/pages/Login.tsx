@@ -23,12 +23,15 @@ const Login = () => {
     const error = params.get("error");
 
     if (success) {
-      refetchUser().then(() => {
-        navigateTo("/login", { replace: true });
+      window.history.replaceState({}, document.title, window.location.pathname);
+      refetchUser().then((fetchedUser) => {
         setAuthState("GRANTED");
+        setTimeout(() => {
+          navigateTo("/dashboard", { replace: true });
+        }, 1200);
       });
     } else if (error) {
-      navigateTo("/login", { replace: true });
+      window.history.replaceState({}, document.title, window.location.pathname);
       setAuthState("DENIED");
     }
   }, [refetchUser]);
@@ -36,6 +39,9 @@ const Login = () => {
   useEffect(() => {
     if (user && authState === "IDLE") {
       setAuthState("GRANTED");
+      setTimeout(() => {
+        navigateTo("/dashboard", { replace: true });
+      }, 1000);
     }
   }, [user, authState]);
 

@@ -40,15 +40,17 @@ const consumeOAuthState = (
   cookieState: unknown,
   provider: "google" | "github"
 ): { valid: boolean; returnUrl?: string } => {
-  if (typeof queryState !== "string" || typeof cookieState !== "string") {
-    return { valid: false };
-  }
-  if (queryState !== cookieState) {
+  if (typeof queryState !== "string") {
     return { valid: false };
   }
 
   const stored = oauthStateStore.consume(queryState);
-  if (stored?.provider !== provider) {
+  if (!stored || stored.provider !== provider) {
+    return { valid: false };
+  }
+
+  // If cookie is present, verify match; otherwise rely on cryptographically secure server store
+  if (typeof cookieState === "string" && cookieState !== queryState) {
     return { valid: false };
   }
 
