@@ -1,11 +1,16 @@
 const rawApiUrl = import.meta.env.VITE_API_URL;
 
-if (import.meta.env.PROD && !rawApiUrl) {
-  console.warn(
-    "[LearnOpto API] VITE_API_URL environment variable is not defined at build time. " +
-    "Defaulting API_BASE_URL to http://localhost:3000. Ensure VITE_API_URL is set in your host build settings (e.g. Render/Vercel)."
-  );
-}
+const getDefaultApiUrl = (): string => {
+  if (rawApiUrl) return rawApiUrl;
+  
+  // If running on a live domain (not localhost), fallback to hosted Render backend
+  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+    return "https://learnopto-2.onrender.com";
+  }
 
-export const API_BASE_URL = (rawApiUrl || "http://localhost:3000").replace(/\/+$/, "");
+  return "http://localhost:3000";
+};
+
+export const API_BASE_URL = getDefaultApiUrl().replace(/\/+$/, "");
+
 
