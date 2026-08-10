@@ -9,7 +9,7 @@ import { TemporaryStore } from "../utils/temporaryStore";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
-const oauthStateStore = new TemporaryStore<{ provider: "google" | "github" }>();
+const oauthStateStore = new TemporaryStore<{ provider: "google" | "github"; returnUrl?: string }>();
 
 type RegisterRequest = {
   email: string;
@@ -18,9 +18,9 @@ type RegisterRequest = {
 
 type LoginRequest = RegisterRequest;
 
-const createOAuthState = (provider: "google" | "github"): string => {
+const createOAuthState = (provider: "google" | "github", returnUrl?: string): string => {
   const state = `${provider}.${crypto.randomBytes(32).toString("hex")}`;
-  oauthStateStore.set(state, { provider }, authConfig.oauthStateTtlMs);
+  oauthStateStore.set(state, { provider, returnUrl }, authConfig.oauthStateTtlMs);
   return state;
 };
 
@@ -39,20 +39,41 @@ const consumeOAuthState = (
   queryState: unknown,
   cookieState: unknown,
   provider: "google" | "github"
-): boolean => {
+): { valid: boolean; returnUrl?: string } => {
   if (typeof queryState !== "string" || typeof cookieState !== "string") {
-    return false;
+    return { valid: false };
   }
   if (queryState !== cookieState) {
-    return false;
+    return { valid: false };
   }
 
   const stored = oauthStateStore.consume(queryState);
-  return stored?.provider === provider;
+  if (stored?.provider !== provider) {
+    return { valid: false };
+  }
+
+  return { valid: true, returnUrl: stored.returnUrl };
 };
 
-const redirectToLogin = (res: Response, error: string): void => {
-  res.redirect(`${appConfig.frontendUrl}/login?error=${encodeURIComponent(error)}`);
+const getReturnUrlFromRequest = (req: Request): string => {
+  const referer = req.headers.referer;
+  if (referer) {
+    try {
+      const parsed = new URL(referer);
+      const origin = parsed.origin;
+      if (appConfig.allowedOrigins.includes(origin)) {
+        return origin;
+      }
+    } catch {
+      // Ignore URL parsing errors
+    }
+  }
+  return appConfig.frontendUrl;
+};
+
+const redirectToLogin = (res: Response, error: string, returnUrl?: string): void => {
+  const target = returnUrl || appConfig.frontendUrl;
+  res.redirect(`${target}/login?error=${encodeURIComponent(error)}`);
 };
 
 const trackFailedLogin = async (userId?: string): Promise<void> => {
@@ -188,7 +209,8 @@ export const googleLoginRedirect = (req: Request, res: Response): void => {
     return;
   }
 
-  const state = createOAuthState("google");
+  const returnUrl = getReturnUrlFromRequest(req);
+  const state = createOAuthState("google", returnUrl);
   setOAuthStateCookie(res, state);
 
   const scope = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
@@ -205,19 +227,25 @@ export const googleLoginRedirect = (req: Request, res: Response): void => {
 };
 
 export const googleCallback = async (req: Request, res: Response): Promise<void> => {
+  let returnUrl = appConfig.frontendUrl;
   try {
     const { code, state } = req.query;
     const savedState = req.cookies.oauth_state;
 
-    if (!consumeOAuthState(state, savedState, "google")) {
+    const stateResult = consumeOAuthState(state, savedState, "google");
+    if (!stateResult.valid) {
       clearOAuthStateCookie(res);
       redirectToLogin(res, "InvalidOAuthState");
       return;
     }
     clearOAuthStateCookie(res);
 
+    if (stateResult.returnUrl) {
+      returnUrl = stateResult.returnUrl;
+    }
+
     if (!code || typeof code !== "string") {
-      redirectToLogin(res, "InvalidGoogleCode");
+      redirectToLogin(res, "InvalidGoogleCode", returnUrl);
       return;
     }
 
@@ -237,7 +265,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
     const tokenData = await tokenResponse.json();
     if (!tokenResponse.ok || !tokenData.access_token) {
       console.error("Token Exchange Error:", tokenData);
-      redirectToLogin(res, "GoogleTokenExchangeFailed");
+      redirectToLogin(res, "GoogleTokenExchangeFailed", returnUrl);
       return;
     }
 
@@ -248,7 +276,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
 
     const profileData = await profileResponse.json();
     if (!profileResponse.ok || !profileData.email) {
-      redirectToLogin(res, "GoogleProfileFetchFailed");
+      redirectToLogin(res, "GoogleProfileFetchFailed", returnUrl);
       return;
     }
 
@@ -287,10 +315,10 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
     setAuthCookie(res, token);
 
     // Redirect to login with success flag (so frontend triggers the Granted animation)
-    res.redirect(`${appConfig.frontendUrl}/login?success=true`);
+    res.redirect(`${returnUrl}/login?success=true`);
   } catch (error) {
     console.error("Google Callback Error:", error);
-    redirectToLogin(res, "InternalServerError");
+    redirectToLogin(res, "InternalServerError", returnUrl);
   }
 };
 
@@ -302,7 +330,8 @@ export const githubLoginRedirect = (req: Request, res: Response): void => {
     return;
   }
 
-  const state = createOAuthState("github");
+  const returnUrl = getReturnUrlFromRequest(req);
+  const state = createOAuthState("github", returnUrl);
   setOAuthStateCookie(res, state);
 
   const authUrl = new URL("https://github.com/login/oauth/authorize");
@@ -317,19 +346,25 @@ export const githubLoginRedirect = (req: Request, res: Response): void => {
 };
 
 export const githubCallback = async (req: Request, res: Response): Promise<void> => {
+  let returnUrl = appConfig.frontendUrl;
   try {
     const { code, state } = req.query;
     const savedState = req.cookies.oauth_state;
 
-    if (!consumeOAuthState(state, savedState, "github")) {
+    const stateResult = consumeOAuthState(state, savedState, "github");
+    if (!stateResult.valid) {
       clearOAuthStateCookie(res);
       redirectToLogin(res, "InvalidOAuthState");
       return;
     }
     clearOAuthStateCookie(res);
 
+    if (stateResult.returnUrl) {
+      returnUrl = stateResult.returnUrl;
+    }
+
     if (!code || typeof code !== "string") {
-      redirectToLogin(res, "InvalidGithubCode");
+      redirectToLogin(res, "InvalidGithubCode", returnUrl);
       return;
     }
 
@@ -353,7 +388,7 @@ export const githubCallback = async (req: Request, res: Response): Promise<void>
     const tokenData = await tokenRes.json();
     if (!tokenRes.ok || !tokenData.access_token) {
       console.error("GitHub Token Exchange Failed:", tokenData);
-      redirectToLogin(res, "GithubTokenExchangeFailed");
+      redirectToLogin(res, "GithubTokenExchangeFailed", returnUrl);
       return;
     }
 
@@ -382,7 +417,7 @@ export const githubCallback = async (req: Request, res: Response): Promise<void>
     }
 
     if (!email) {
-      redirectToLogin(res, "GithubEmailNotFound");
+      redirectToLogin(res, "GithubEmailNotFound", returnUrl);
       return;
     }
 
@@ -418,9 +453,9 @@ export const githubCallback = async (req: Request, res: Response): Promise<void>
     const token = signAuthToken(user.id);
     setAuthCookie(res, token);
 
-    res.redirect(`${appConfig.frontendUrl}/login?success=true`);
+    res.redirect(`${returnUrl}/login?success=true`);
   } catch (error) {
     console.error("Github Callback Error:", error);
-    redirectToLogin(res, "InternalServerError");
+    redirectToLogin(res, "InternalServerError", returnUrl);
   }
 };
