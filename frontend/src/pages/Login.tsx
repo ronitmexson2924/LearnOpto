@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, BookOpen, TrendingUp, ShieldCheck, AlertCircle, Loader2 } from "lucide-react";
@@ -7,12 +6,15 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { navigateTo, reloadCurrentPage } from "@/lib/navigation";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { useAuth } from "@/components/auth/AuthContext";
+import { API_BASE_URL } from "@/lib/api";
 
 type AuthState = "IDLE" | "AUTHENTICATING" | "GRANTED" | "DENIED";
 
 const Login = () => {
   const [authState, setAuthState] = useState<AuthState>("IDLE");
   const { toast } = useToast();
+  const { user, refetchUser } = useAuth();
 
   // Check for success or error from backend OAuth redirect
   useEffect(() => {
@@ -21,32 +23,21 @@ const Login = () => {
     const error = params.get("error");
 
     if (success) {
-      navigateTo("/login", { replace: true });
-      setAuthState("GRANTED");
+      refetchUser().then(() => {
+        navigateTo("/login", { replace: true });
+        setAuthState("GRANTED");
+      });
     } else if (error) {
       navigateTo("/login", { replace: true });
       setAuthState("DENIED");
     }
-  }, []);
-
-  // Check if user is already authenticated
-  const { data: userProfile } = useQuery({
-    queryKey: ["me"],
-    queryFn: async () => {
-      const res = await fetch("http://localhost:3000/api/auth/me", {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Not authenticated");
-      return res.json();
-    },
-    retry: false,
-  });
+  }, [refetchUser]);
 
   useEffect(() => {
-    if (userProfile && authState === "IDLE") {
+    if (user && authState === "IDLE") {
       setAuthState("GRANTED");
     }
-  }, [userProfile, authState]);
+  }, [user, authState]);
 
   // Handle DENIED redirect timeout
   useEffect(() => {
@@ -67,14 +58,14 @@ const Login = () => {
   const handleGoogleLogin = () => {
     setAuthState("AUTHENTICATING");
     setTimeout(() => {
-      window.location.href = "http://localhost:3000/api/auth/google/login";
+      window.location.href = `${API_BASE_URL}/api/auth/google/login`;
     }, 300);
   };
 
   const handleGithubLogin = () => {
     setAuthState("AUTHENTICATING");
     setTimeout(() => {
-      window.location.href = "http://localhost:3000/api/auth/github/login";
+      window.location.href = `${API_BASE_URL}/api/auth/github/login`;
     }, 300);
   };
 
@@ -83,7 +74,7 @@ const Login = () => {
       <SEOHead
         title="Sign In & Authentication — LearnOpto"
         description="Sign in to LearnOpto with Google OAuth 2.0, GitHub OAuth, or WebAuthn Passkeys to access your personalized library, saved resources, and search history."
-        canonicalUrl="https://learnopto.com/login"
+        canonicalUrl="https://learnopto.site/login"
       />
       {/* Ambient gradient background orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">

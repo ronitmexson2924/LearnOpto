@@ -5,37 +5,37 @@
 
   <!-- Core Public Pages -->
   <url>
-    <loc>https://learnopto.com/</loc>
+    <loc>https://learnopto.site/</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/login</loc>
+    <loc>https://learnopto.site/login</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/about</loc>
+    <loc>https://learnopto.site/about</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/faq</loc>
+    <loc>https://learnopto.site/faq</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/privacy</loc>
+    <loc>https://learnopto.site/privacy</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/terms</loc>
+    <loc>https://learnopto.site/terms</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
@@ -43,19 +43,19 @@
 
   <!-- Feature Pages -->
   <url>
-    <loc>https://learnopto.com/features/ai-search</loc>
+    <loc>https://learnopto.site/features/ai-search</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/features/personal-library</loc>
+    <loc>https://learnopto.site/features/personal-library</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/features/roadmaps</loc>
+    <loc>https://learnopto.site/features/roadmaps</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -63,31 +63,31 @@
 
   <!-- Programmatic Topic Pages -->
   <url>
-    <loc>https://learnopto.com/topics/react</loc>
+    <loc>https://learnopto.site/topics/react</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/topics/python</loc>
+    <loc>https://learnopto.site/topics/python</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/topics/system-design</loc>
+    <loc>https://learnopto.site/topics/system-design</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/topics/machine-learning</loc>
+    <loc>https://learnopto.site/topics/machine-learning</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/topics/cloud-computing</loc>
+    <loc>https://learnopto.site/topics/cloud-computing</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -95,19 +95,19 @@
 
   <!-- Programmatic Roadmap Pages -->
   <url>
-    <loc>https://learnopto.com/roadmaps/frontend-development</loc>
+    <loc>https://learnopto.site/roadmaps/frontend-development</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/roadmaps/backend-development</loc>
+    <loc>https://learnopto.site/roadmaps/backend-development</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://learnopto.com/roadmaps/ai-engineering</loc>
+    <loc>https://learnopto.site/roadmaps/ai-engineering</loc>
     <lastmod>2026-08-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>

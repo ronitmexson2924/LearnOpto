@@ -1,6 +1,7 @@
 import { ExternalLink, Eye, Bookmark, BookmarkCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { API_BASE_URL } from "@/lib/api";
 
 export interface ResourceCardProps {
   id?: string;
@@ -47,6 +48,7 @@ const typeLabels: Record<string, string> = {
 };
 
 export const ResourceCard = ({
+  id,
   title,
   description,
   url,
@@ -63,7 +65,7 @@ export const ResourceCard = ({
     if (!url || url === "#" || url === "") return;
 
     // Fire non-blocking tracking call in background
-    fetch("http://localhost:3000/api/resources/interaction", {
+    fetch(`${API_BASE_URL}/api/resources/interaction`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

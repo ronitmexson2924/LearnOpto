@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { navigateTo, reloadCurrentPage } from "@/lib/navigation";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { useAuth } from "@/components/auth/AuthContext";
+import { API_BASE_URL } from "@/lib/api";
 
 type ResourceType = "youtube" | "podcast" | "documentation" | "course" | "video" | "article" | "audio" | "docs";
 
@@ -119,6 +121,7 @@ const normalizeResourceType = (type: string): ResourceType => {
 
 export default function Dashboard() {
   const { toast } = useToast();
+  const { user: userProfile, logout } = useAuth();
   const queryClient = useQueryClient();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -128,27 +131,11 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<"results" | "saved">("results");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Auth Check - verify session
-  const { data: userProfile } = useQuery({
-    queryKey: ["me"],
-    queryFn: async () => {
-      const res = await fetch("http://localhost:3000/api/auth/me", {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        navigateTo("/login");
-        throw new Error("Unauthorized");
-      }
-      return res.json();
-    },
-    retry: false,
-  });
-
   // Fetch History
   const { data: historyData, isLoading: isLoadingHistory } = useQuery<{ history: SearchQuery[] }>({
     queryKey: ["searchHistory"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:3000/api/search/history", {
+      const res = await fetch(`${API_BASE_URL}/api/search/history`, {
         credentials: "include",
       });
       if (res.status === 401) {
@@ -167,7 +154,7 @@ export default function Dashboard() {
   const { data: savedResourcesData } = useQuery<{ resources: SavedResource[] }>({
     queryKey: ["savedResources"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:3000/api/resources/saved", {
+      const res = await fetch(`${API_BASE_URL}/api/resources/saved`, {
         credentials: "include",
       });
       if (res.status === 401) {
@@ -197,14 +184,14 @@ export default function Dashboard() {
       savedId?: string;
     }) => {
       if (data.isSaved && data.savedId) {
-        const res = await fetch(`http://localhost:3000/api/resources/save/${data.savedId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/resources/save/${data.savedId}`, {
           method: "DELETE",
           credentials: "include",
         });
         if (!res.ok) throw new Error(await getApiErrorMessage(res, "Failed to remove saved resource"));
         return res.json();
       } else {
-        const res = await fetch("http://localhost:3000/api/resources/save", {
+        const res = await fetch(`${API_BASE_URL}/api/resources/save`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -242,7 +229,7 @@ export default function Dashboard() {
   const { data: analyticsData } = useQuery<{ analytics: { totalSearches: number; totalResourcesSaved: number; totalResourcesViewed: number } }>({
     queryKey: ["userAnalytics"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:3000/api/user/analytics", { credentials: "include" });
+      const res = await fetch(`${API_BASE_URL}/api/user/analytics`, { credentials: "include" });
       if (!res.ok) return { analytics: { totalSearches: 0, totalResourcesSaved: 0, totalResourcesViewed: 0 } };
       return res.json();
     },
@@ -253,7 +240,7 @@ export default function Dashboard() {
   const { data: preferencesData } = useQuery<{ preferences: { preferredSources: string[] } }>({
     queryKey: ["userPreferences"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:3000/api/user/preferences", { credentials: "include" });
+      const res = await fetch(`${API_BASE_URL}/api/user/preferences`, { credentials: "include" });
       if (!res.ok) return { preferences: { preferredSources: ["video", "podcast", "documentation", "course"] } };
       return res.json();
     },
@@ -262,7 +249,7 @@ export default function Dashboard() {
 
   const updatePreferencesMutation = useMutation({
     mutationFn: async (preferredSources: string[]) => {
-      const res = await fetch("http://localhost:3000/api/user/preferences", {
+      const res = await fetch(`${API_BASE_URL}/api/user/preferences`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -280,7 +267,7 @@ export default function Dashboard() {
   // Search Mutation
   const searchMutation = useMutation({
     mutationFn: async (topic: string) => {
-      const res = await fetch("http://localhost:3000/api/search", {
+      const res = await fetch(`${API_BASE_URL}/api/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -312,7 +299,7 @@ export default function Dashboard() {
   // Delete History Item Mutation
   const deleteHistoryMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`http://localhost:3000/api/search/history/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/search/history/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -357,18 +344,7 @@ export default function Dashboard() {
     },
   });
 
-  const handleLogout = async () => {
-    try {
-      await fetch("http://localhost:3000/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-      queryClient.clear();
-      navigateTo("/login");
-    } catch {
-      navigateTo("/login");
-    }
-  };
+
 
   const handleSearch = (topic: string) => {
     searchMutation.mutate(topic);
@@ -481,8 +457,8 @@ export default function Dashboard() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleLogout}
-            className="text-xs font-medium text-muted-foreground hover:text-foreground gap-1.5"
+            onClick={logout}
+            className="text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 gap-1.5 transition-all duration-200 rounded-xl"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Log out</span>

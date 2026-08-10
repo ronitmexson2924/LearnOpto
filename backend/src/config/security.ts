@@ -86,6 +86,20 @@ const frontendUrl = parseOrigin(process.env.FRONTEND_URL || "http://localhost:80
 const authCookieSameSite = parseSameSite(process.env.AUTH_COOKIE_SAME_SITE);
 const authCookieSecure = parseBoolean("AUTH_COOKIE_SECURE", process.env.NODE_ENV === "production");
 
+const rawAllowedOrigins = process.env.ALLOWED_ORIGINS
+  ? parseOriginList(process.env.ALLOWED_ORIGINS)
+  : [];
+
+const allowedOrigins = Array.from(
+  new Set([
+    frontendUrl,
+    ...rawAllowedOrigins,
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://localhost:3000",
+  ])
+);
+
 export const authConfig = {
   jwtSecret: process.env.JWT_SECRET || "",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
@@ -103,6 +117,7 @@ export const authConfig = {
 
 export const appConfig = {
   frontendUrl,
+  allowedOrigins,
   jsonBodyLimit: parseSizeLimit("JSON_BODY_LIMIT", "32kb"),
   googleRedirectUri: parseUrl(
     process.env.GOOGLE_REDIRECT_URI || "http://localhost:3000/api/auth/google/callback",
@@ -134,7 +149,7 @@ export const searchQuotaConfig = {
   ),
 };
 
-const defaultExpectedOrigins = process.env.WEBAUTHN_EXPECTED_ORIGINS || process.env.ORIGIN || frontendUrl;
+const defaultExpectedOrigins = process.env.WEBAUTHN_EXPECTED_ORIGINS || process.env.ORIGIN || allowedOrigins.join(",");
 const expectedOrigins = parseOriginList(defaultExpectedOrigins);
 
 export const passkeyConfig = {
@@ -143,3 +158,4 @@ export const passkeyConfig = {
   expectedOrigins,
   challengeTtlMs: parsePositiveInt("PASSKEY_CHALLENGE_TTL_MS", 5 * 60 * 1000),
 };
+

@@ -1,4 +1,4 @@
-export const SITE_URL = "https://learnopto.com";
+export const SITE_URL = "https://learnopto.site";
 
 export const buildWebSiteSchema = () => ({
   "@context": "https://schema.org",

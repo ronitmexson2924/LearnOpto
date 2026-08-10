@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/hooks/use-theme";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { AuthProvider } from "@/components/auth/AuthContext";
 import { ProtectedRoute, GuestRoute } from "@/components/auth/ProtectedRoute";
@@ -135,7 +135,16 @@ const AnimatedRoutes = () => {
   return (
     <Suspense fallback={<PageLoader />}>
       <AnimatePresence mode="wait">
-        <div key={normalizePath(path)}>{renderPage(path)}</div>
+        <motion.div
+          key={normalizePath(path)}
+          initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full flex-1 flex flex-col"
+        >
+          {renderPage(path)}
+        </motion.div>
       </AnimatePresence>
     </Suspense>
   );

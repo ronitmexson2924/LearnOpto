@@ -33,4 +33,4 @@ Allow: /
 Disallow: /api/auth/
 Disallow: /dashboard
 
-Sitemap: https://learnopto.com/sitemap.xml
+Sitemap: https://learnopto.site/sitemap.xml

@@ -68,7 +68,7 @@ export default function FeatureDetail({ slug = "ai-search" }: { slug?: string })
       <SEOHead
         title={`${feature.title} — LearnOpto Features`}
         description={feature.description}
-        canonicalUrl={`https://learnopto.com/features/${slug}`}
+        canonicalUrl={`https://learnopto.site/features/${slug}`}
       />
       <JsonLd data={[softwareSchema, breadcrumbSchema]} />
 

@@ -109,6 +109,36 @@
     backface-visibility: hidden;
   }
 
+  /* Glassmorphism UI effects */
+  .glass-panel {
+    background: rgba(var(--card), 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-card {
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
+  }
+
+  .glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.08);
+  }
+
+  .dark .glass-card:hover {
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Custom subtle scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   /* Safe area inset utilities for mobile notch / home indicator devices */
   .safe-pt {
     padding-top: max(1rem, env(safe-area-inset-top));

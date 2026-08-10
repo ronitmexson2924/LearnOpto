@@ -152,7 +152,7 @@ export default function TopicDetail({ slug = "react" }: { slug?: string }) {
     description: topic.description,
     provider: "LearnOpto",
     category: topic.category,
-    url: `https://learnopto.com/topics/${topic.slug}`,
+    url: `https://learnopto.site/topics/${topic.slug}`,
   });
 
   const breadcrumbSchema = buildBreadcrumbSchema([
@@ -168,7 +168,7 @@ export default function TopicDetail({ slug = "react" }: { slug?: string }) {
       <SEOHead
         title={`${topic.name} — AI-Curated Learning Path`}
         description={topic.description}
-        canonicalUrl={`https://learnopto.com/topics/${topic.slug}`}
+        canonicalUrl={`https://learnopto.site/topics/${topic.slug}`}
       />
       <JsonLd data={[courseSchema, breadcrumbSchema, faqSchema]} />
 

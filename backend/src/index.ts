@@ -29,17 +29,11 @@ app.use(helmet());
 // Rate Limiting
 app.use("/api/", globalApiLimiter);
 
-const allowedOrigins = Array.from(new Set([
-  appConfig.frontendUrl.replace(/\/+$/, ""),
-  "http://localhost:8080",
-  "http://127.0.0.1:8080",
-]));
-
 app.use(cors({
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean | string) => void) => {
     if (!origin) return callback(null, true);
     const cleaned = origin.replace(/\/+$/, "");
-    if (allowedOrigins.includes(cleaned)) {
+    if (appConfig.allowedOrigins.includes(cleaned)) {
       return callback(null, cleaned);
     }
     callback(null, cleaned);

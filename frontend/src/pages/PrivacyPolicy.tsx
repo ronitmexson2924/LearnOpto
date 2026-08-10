@@ -12,7 +12,7 @@ export default function PrivacyPolicy() {
       <SEOHead
         title="Privacy Policy — LearnOpto"
         description="LearnOpto Privacy Policy. Details on HTTP-Only cookie security, data handling, and privacy protections for our AI search platform."
-        canonicalUrl="https://learnopto.com/privacy"
+        canonicalUrl="https://learnopto.site/privacy"
       />
       {/* Ambient background orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">

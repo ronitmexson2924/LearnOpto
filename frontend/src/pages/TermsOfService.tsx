@@ -12,7 +12,7 @@ export default function TermsOfService() {
       <SEOHead
         title="Terms of Service — LearnOpto"
         description="LearnOpto Terms of Service. Acceptable use policies, API terms, and user guidelines for our AI-powered educational discovery platform."
-        canonicalUrl="https://learnopto.com/terms"
+        canonicalUrl="https://learnopto.site/terms"
       />
       {/* Background ambient lighting */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">

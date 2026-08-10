@@ -16,7 +16,7 @@ export default function AboutCreator() {
       <SEOHead
         title="About Ronit Mexson — Creator & Architect of LearnOpto"
         description="Learn about Ronit Mexson, creator of LearnOpto. Built to solve search fatigue by organizing video courses, technical documentation, podcasts, and roadmaps with AI."
-        canonicalUrl="https://learnopto.com/about"
+        canonicalUrl="https://learnopto.site/about"
       />
       <JsonLd data={orgSchema} />
       {/* Background ambient lighting */}

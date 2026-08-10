@@ -13,7 +13,7 @@ export interface SEOHeadProps {
   modifiedTime?: string;
 }
 
-const DEFAULT_SITE_URL = "https://learnopto.com";
+const DEFAULT_SITE_URL = "https://learnopto.site";
 const DEFAULT_SITE_NAME = "LearnOpto";
 const DEFAULT_OG_IMAGE = `${DEFAULT_SITE_URL}/og-image.png`;
 

@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Sparkles, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { navigateTo, reloadCurrentPage } from "@/lib/navigation";
+import { useAuth } from "@/components/auth/AuthContext";
+import { API_BASE_URL } from "@/lib/api";
 
 const getErrorMessage = (error: unknown, fallback: string) => {
   return error instanceof Error ? error.message : fallback;
@@ -16,13 +18,14 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { refetchUser } = useAuth();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/register", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -35,6 +38,7 @@ const Signup = () => {
         throw new Error(data.error || "Signup failed");
       }
 
+      await refetchUser();
       toast({ title: "Account Created", description: "Welcome to LearnOpto!" });
       navigateTo("/dashboard");
     } catch (error: unknown) {

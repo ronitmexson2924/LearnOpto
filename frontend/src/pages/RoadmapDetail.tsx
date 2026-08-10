@@ -77,7 +77,7 @@ export default function RoadmapDetail({ slug = "frontend-development" }: { slug?
       <SEOHead
         title={`${roadmap.title} — Step-by-Step Guide`}
         description={roadmap.description}
-        canonicalUrl={`https://learnopto.com/roadmaps/${roadmap.slug}`}
+        canonicalUrl={`https://learnopto.site/roadmaps/${roadmap.slug}`}
       />
       <JsonLd data={[howToSchema, breadcrumbSchema]} />
 

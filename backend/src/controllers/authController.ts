@@ -151,13 +151,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const logout = (req: Request, res: Response): void => {
-  const validation = validateEmptyBody(req.body);
-  if (!validation.ok) {
-    sendValidationError(res, validation.errors);
-    return;
-  }
-
+export const logout = (_req: Request, res: Response): void => {
   clearAuthCookie(res);
   res.status(200).json({ success: true, message: "Logged out successfully" });
 };

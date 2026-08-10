@@ -1,9 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { startRegistration, startAuthentication } from "@simplewebauthn/browser";
+import { API_BASE_URL } from "@/lib/api";
 
 // A small helper to handle JSON requests
 const fetchJSON = async (url: string, options: RequestInit = {}) => {
-  const res = await fetch(url, {
+  const targetUrl = url.startsWith("http://") || url.startsWith("https://") 
+    ? url 
+    : `${API_BASE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+
+  const res = await fetch(targetUrl, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -79,3 +84,4 @@ export function useRemovePasskey() {
     },
   });
 }
+

@@ -70,7 +70,7 @@ export default function Index() {
       <SEOHead
         title="LearnOpto — Fast, Smart & Focused Learning Engine"
         description="LearnOpto is the ultimate personal learning operating system. Aggregate, summarize, roadmap, and master knowledge faster with AI."
-        canonicalUrl="https://learnopto.com"
+        canonicalUrl="https://learnopto.site"
       />
       <JsonLd data={[websiteSchema, orgSchema, softwareSchema]} />
       {/* Ambient background glow orbs */}
