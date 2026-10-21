@@ -68,7 +68,7 @@ export default function RoadmapDetail({ slug = "frontend-development" }: { slug?
 
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "Home", url: "/" },
-    { name: "Roadmaps", url: "/roadmaps/frontend-development" },
+    { name: "Roadmaps", url: "/" },
     { name: roadmap.title, url: `/roadmaps/${roadmap.slug}` },
   ]);
 

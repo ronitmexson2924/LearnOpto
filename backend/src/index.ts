@@ -23,8 +23,17 @@ import { appConfig } from "./config/security";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Number of reverse proxies in front of the app (Render = 1, Netlify /api proxy + Render = 2),
+// so req.ip is the real client IP for rate limiting instead of the proxy's address.
+app.set("trust proxy", appConfig.trustProxyHops);
+
 // Security headers
 app.use(helmet());
+
+// Health check (outside /api so it isn't rate limited)
+app.get("/health", (_req, res) => {
+  res.status(200).send("ok");
+});
 
 // Rate Limiting
 app.use("/api/", globalApiLimiter);
@@ -36,7 +45,8 @@ app.use(cors({
     if (appConfig.allowedOrigins.includes(cleaned)) {
       return callback(null, cleaned);
     }
-    callback(null, cleaned);
+    // Unknown origin: send no CORS headers so the browser blocks the response
+    callback(null, false);
   },
   credentials: true,
 }));

@@ -10,6 +10,7 @@ import { authConfig, passkeyConfig } from "../config/security";
 import { setAuthCookie, signAuthToken } from "../utils/authSession";
 import { schemas, sendValidationError, validateBody, validateEmptyBody } from "../utils/requestValidation";
 import { TemporaryStore } from "../utils/temporaryStore";
+import { sendLoginAlertEmail } from "../services/emailService";
 
 // RP Settings
 const rpName = passkeyConfig.rpName;
@@ -381,6 +382,14 @@ export const authenticateVerify = async (req: Request, res: Response): Promise<v
       // Issue JWT session
       const token = signAuthToken(passkey.userId);
       setAuthCookie(res, token);
+
+      // Asynchronously send Passkey login alert email
+      sendLoginAlertEmail({
+        toEmail: passkey.user.email,
+        userName: passkey.user.name || undefined,
+        userAgent: req.headers["user-agent"],
+        ipAddress: req.ip || req.socket.remoteAddress,
+      }).catch(() => {});
 
       res.status(200).json({ verified: true, user: { id: passkey.user.id, email: passkey.user.email, name: passkey.user.name } });
     } else {

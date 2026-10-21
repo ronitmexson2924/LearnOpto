@@ -59,7 +59,7 @@ export default function FeatureDetail({ slug = "ai-search" }: { slug?: string })
   const softwareSchema = buildSoftwareApplicationSchema();
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "Home", url: "/" },
-    { name: "Features", url: "/features/ai-search" },
+    { name: "Features", url: "/" },
     { name: feature.title, url: `/features/${slug}` },
   ]);
 

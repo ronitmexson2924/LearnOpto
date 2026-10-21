@@ -119,6 +119,34 @@ const TOPICS: Record<string, TopicData> = {
       { name: "AI Engineering", slug: "ai-engineering" },
     ],
   },
+  "cloud-computing": {
+    slug: "cloud-computing",
+    name: "Cloud Computing & DevOps Engineering",
+    category: "Cloud Infrastructure",
+    description: "Master AWS, GCP, Azure, Docker, Kubernetes, CI/CD pipelines, serverless architecture, and infrastructure as code (Terraform).",
+    learningObjectives: [
+      "Understand cloud service models (IaaS, PaaS, SaaS) and provider ecosystems",
+      "Deploy containerized applications with Docker and orchestrate with Kubernetes",
+      "Build CI/CD pipelines with GitHub Actions, Jenkins, and ArgoCD",
+      "Implement Infrastructure as Code using Terraform and Pulumi",
+    ],
+    recommendedTypes: ["Video Tutorials", "Official Documentation", "Certification Guides", "Hands-On Labs"],
+    faq: [
+      {
+        question: "Which cloud provider should I learn first in 2026?",
+        answer: "AWS has the largest market share, but GCP and Azure are growing rapidly. Start with one provider's fundamentals, then learn multi-cloud patterns.",
+      },
+      {
+        question: "Does LearnOpto cover cloud certification resources?",
+        answer: "Yes! LearnOpto curates free YouTube courses, official documentation, practice exams, and study guides for AWS, GCP, and Azure certifications.",
+      },
+    ],
+    relatedTopics: [
+      { name: "System Design", slug: "system-design" },
+      { name: "Backend Development", slug: "backend-development" },
+      { name: "AI Engineering", slug: "ai-engineering" },
+    ],
+  },
 };
 
 export default function TopicDetail({ slug = "react" }: { slug?: string }) {
@@ -157,8 +185,8 @@ export default function TopicDetail({ slug = "react" }: { slug?: string }) {
 
   const breadcrumbSchema = buildBreadcrumbSchema([
     { name: "Home", url: "/" },
-    { name: "Topics", url: "/topics/react" },
-    { name: "React & Modern Frontend Engineering", url: `/topics/${topic.slug}` },
+    { name: "Topics", url: "/" },
+    { name: topic.name, url: `/topics/${topic.slug}` },
   ]);
 
   const faqSchema = buildFAQSchema(topic.faq);

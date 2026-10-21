@@ -119,6 +119,7 @@ export const appConfig = {
   frontendUrl,
   allowedOrigins,
   jsonBodyLimit: parseSizeLimit("JSON_BODY_LIMIT", "32kb"),
+  trustProxyHops: parsePositiveInt("TRUST_PROXY_HOPS", 1),
   googleRedirectUri: parseUrl(
     process.env.GOOGLE_REDIRECT_URI || "http://localhost:3000/api/auth/google/callback",
     "GOOGLE_REDIRECT_URI"

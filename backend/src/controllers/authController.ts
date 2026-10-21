@@ -6,6 +6,7 @@ import { appConfig, authConfig } from "../config/security";
 import { clearAuthCookie, setAuthCookie, signAuthToken } from "../utils/authSession";
 import { schemas, sendValidationError, validateBody, validateEmptyBody } from "../utils/requestValidation";
 import { TemporaryStore } from "../utils/temporaryStore";
+import { sendLoginAlertEmail } from "../services/emailService";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
@@ -120,6 +121,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const token = signAuthToken(user.id);
     setAuthCookie(res, token);
 
+    // Asynchronously send sign-in / registration confirmation email
+    sendLoginAlertEmail({
+      toEmail: user.email,
+      userName: user.name || undefined,
+      userAgent: req.headers["user-agent"],
+      ipAddress: req.ip || req.socket.remoteAddress,
+    }).catch(() => {});
+
     res.status(201).json({ user: { id: user.id, email: user.email } });
   } catch (error) {
     console.error(error);
@@ -166,6 +175,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const token = signAuthToken(user.id);
     setAuthCookie(res, token);
+
+    // Asynchronously send sign-in confirmation email
+    sendLoginAlertEmail({
+      toEmail: user.email,
+      userName: user.name || undefined,
+      userAgent: req.headers["user-agent"],
+      ipAddress: req.ip || req.socket.remoteAddress,
+    }).catch(() => {});
 
     res.status(200).json({ user: { id: user.id, email: user.email, name: user.name } });
   } catch (error) {
@@ -316,6 +333,14 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
     const token = signAuthToken(user.id);
     setAuthCookie(res, token);
 
+    // Asynchronously send Google login notification email
+    sendLoginAlertEmail({
+      toEmail: user.email,
+      userName: user.name || undefined,
+      userAgent: req.headers["user-agent"],
+      ipAddress: req.ip || req.socket.remoteAddress,
+    }).catch(() => {});
+
     // Redirect to login with success flag (so frontend triggers the Granted animation)
     res.redirect(`${returnUrl}/login?success=true`);
   } catch (error) {
@@ -454,6 +479,14 @@ export const githubCallback = async (req: Request, res: Response): Promise<void>
 
     const token = signAuthToken(user.id);
     setAuthCookie(res, token);
+
+    // Asynchronously send GitHub login notification email
+    sendLoginAlertEmail({
+      toEmail: user.email,
+      userName: user.name || undefined,
+      userAgent: req.headers["user-agent"],
+      ipAddress: req.ip || req.socket.remoteAddress,
+    }).catch(() => {});
 
     res.redirect(`${returnUrl}/login?success=true`);
   } catch (error) {
